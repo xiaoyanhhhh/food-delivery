@@ -5,6 +5,7 @@ import com.fooddelivery.dto.LoginRequest;
 import com.fooddelivery.dto.LoginResponse;
 import com.fooddelivery.dto.RegisterRequest;
 import com.fooddelivery.entity.User;
+import com.fooddelivery.exception.BusinessException;
 import com.fooddelivery.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,17 +21,17 @@ public class AuthService {
 
     public LoginResponse register(RegisterRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("用户名已存在");
+            throw new BusinessException("用户名已存在");
         }
         if (userRepository.existsByPhone(request.getPhone())) {
-            throw new RuntimeException("手机号已注册");
+            throw new BusinessException("手机号已注册");
         }
 
         User.Role role;
         try {
             role = User.Role.valueOf(request.getRole().toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("无效的角色: " + request.getRole());
+            throw new BusinessException("无效的角色: " + request.getRole());
         }
 
         User user = User.builder()
@@ -49,10 +50,10 @@ public class AuthService {
 
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("用户名或密码错误"));
+                .orElseThrow(() -> new BusinessException("用户名或密码错误"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("用户名或密码错误");
+            throw new BusinessException("用户名或密码错误");
         }
 
         String token = jwtUtil.generateToken(user.getId(), user.getUsername(), user.getRole().name());

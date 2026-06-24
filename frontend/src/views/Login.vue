@@ -56,8 +56,8 @@ async function handleLogin() {
     if (data.role === 'MERCHANT') router.push('/merchant')
     else if (data.role === 'RIDER') router.push('/rider')
     else router.push('/')
-  } catch (e) {
-    ElMessage.error(e.response?.data?.message || '登录失败')
+  } catch {
+    // 错误消息已由 request 拦截器处理
   } finally {
     loading.value = false
   }

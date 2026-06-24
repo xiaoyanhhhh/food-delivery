@@ -1,6 +1,7 @@
 package com.fooddelivery.service;
 
 import com.fooddelivery.entity.Category;
+import com.fooddelivery.exception.BusinessException;
 import com.fooddelivery.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

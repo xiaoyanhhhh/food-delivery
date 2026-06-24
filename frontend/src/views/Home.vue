@@ -43,6 +43,7 @@ import { useCartStore } from '../stores/cart'
 import { getDishes, searchDishes } from '../api/dish'
 import { getCategories } from '../api/category'
 import { ElMessage } from 'element-plus'
+import { Search, Plus } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const auth = useAuthStore()

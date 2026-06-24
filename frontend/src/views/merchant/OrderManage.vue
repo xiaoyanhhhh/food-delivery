@@ -17,31 +17,39 @@
         <span>顾客：{{ order.customer?.username }}</span>
         <span>总计：<b>¥{{ order.totalPrice }}</b></span>
       </div>
-      <div class="order-actions" v-if="order.status === 'PENDING_ACCEPT'">
-        <el-button type="success" @click="handleAction(order, 'PREPARING')">接单并开始制作</el-button>
+      <div class="order-actions">
+        <el-button v-if="order.status === 'PENDING_ACCEPT' || order.status === 'PAID'" type="success"
+          @click="handleAction(order, 'PREPARING')">
+          接单并制作
+        </el-button>
+        <el-button v-if="order.status === 'PREPARING'" type="primary"
+          @click="handleAction(order, 'READY')">
+          制作完成
+        </el-button>
+        <!-- Reply review if needed -->
+        <div v-if="order.status === 'COMPLETED'" style="color:#909399;font-size:12px">
+          订单已完成
+        </div>
       </div>
-      <div class="order-actions" v-if="order.status === 'PREPARING'">
-        <el-button type="primary" @click="handleAction(order, 'PENDING_PICKUP')">已完成制作</el-button>
+      <div v-if="order.note" style="margin-top:8px;color:#e6a23c;font-size:13px">
+        备注：{{ order.note }}
       </div>
     </el-card>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { getMerchantOrders, updateOrderStatus } from '../../api/order'
 import { ElMessage } from 'element-plus'
+import { usePolling } from '../../composables/usePolling'
 
 const orders = ref([])
 
 const statusMap = {
-  PENDING_PAYMENT: '待支付',
-  PENDING_ACCEPT: '待接单',
-  PREPARING: '制作中',
-  PENDING_PICKUP: '待取餐',
-  DELIVERING: '配送中',
-  COMPLETED: '已完成',
-  CANCELLED: '已取消',
+  PENDING_PAYMENT: '待支付', PAID: '已支付', PENDING_ACCEPT: '待接单',
+  PREPARING: '制作中', READY: '已备好', PENDING_PICKUP: '待取餐',
+  PICKED_UP: '已取餐', DELIVERING: '配送中', COMPLETED: '已完成', CANCELLED: '已取消',
 }
 function statusLabel(s) { return statusMap[s] || s }
 function statusType(s) {
@@ -50,7 +58,12 @@ function statusType(s) {
   return ''
 }
 
-async function fetchOrders() { try { orders.value = await getMerchantOrders() } catch { /* handled */ } }
+async function fetchOrders() {
+  try {
+    const data = await getMerchantOrders({ page: 0, size: 20 })
+    orders.value = data.content || data
+  } catch { /* handled */ }
+}
 
 async function handleAction(order, status) {
   try {
@@ -60,7 +73,7 @@ async function handleAction(order, status) {
   } catch { /* handled */ }
 }
 
-onMounted(fetchOrders)
+usePolling(fetchOrders, 15000)
 </script>
 
 <style scoped>

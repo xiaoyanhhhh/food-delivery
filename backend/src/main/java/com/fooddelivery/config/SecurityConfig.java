@@ -32,9 +32,13 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 公开接口
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/dishes").permitAll()
-                .requestMatchers("/api/dishes/search").permitAll()
-                .requestMatchers("/api/categories").permitAll()
+                .requestMatchers("/api/dishes/**").permitAll()
+                .requestMatchers("/api/categories/**").permitAll()
+                .requestMatchers("/api/stores/**").permitAll()
+                .requestMatchers("/api/dishes/*/specs").permitAll()
+                .requestMatchers("/api/dishes/search/**").permitAll()
+                .requestMatchers("/api/reviews/store/**").permitAll()
+                .requestMatchers("/api/reviews/dish/**").permitAll()
                 // 需认证接口
                 .anyRequest().authenticated()
             )
@@ -51,9 +55,9 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000"));
+        config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:5174", "http://localhost:3000"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

@@ -30,11 +30,7 @@ public class CartController {
         Long dishId = Long.valueOf(body.get("dishId").toString());
         Integer quantity = body.containsKey("quantity")
                 ? Integer.valueOf(body.get("quantity").toString()) : 1;
-        try {
-            return ApiResponse.success(cartService.addToCart(userId, dishId, quantity));
-        } catch (RuntimeException e) {
-            return ApiResponse.error(400, e.getMessage());
-        }
+        return ApiResponse.success(cartService.addToCart(userId, dishId, quantity));
     }
 
     @PutMapping("/{id}")
@@ -42,24 +38,16 @@ public class CartController {
                                                  @RequestBody Map<String, Integer> body,
                                                  Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
-        try {
-            CartItem item = cartService.updateQuantity(id, body.get("quantity"), userId);
-            return ApiResponse.success(item);
-        } catch (RuntimeException e) {
-            return ApiResponse.error(400, e.getMessage());
-        }
+        CartItem item = cartService.updateQuantity(id, body.get("quantity"), userId);
+        return ApiResponse.success(item);
     }
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> removeFromCart(@PathVariable Long id,
                                              Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
-        try {
-            cartService.removeFromCart(id, userId);
-            return ApiResponse.success();
-        } catch (RuntimeException e) {
-            return ApiResponse.error(400, e.getMessage());
-        }
+        cartService.removeFromCart(id, userId);
+        return ApiResponse.success();
     }
 
     @DeleteMapping

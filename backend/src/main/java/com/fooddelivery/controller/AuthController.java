@@ -18,21 +18,11 @@ public class AuthController {
 
     @PostMapping("/register")
     public ApiResponse<LoginResponse> register(@Valid @RequestBody RegisterRequest request) {
-        try {
-            LoginResponse resp = authService.register(request);
-            return ApiResponse.success(resp);
-        } catch (RuntimeException e) {
-            return ApiResponse.error(400, e.getMessage());
-        }
+        return ApiResponse.success(authService.register(request));
     }
 
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        try {
-            LoginResponse resp = authService.login(request);
-            return ApiResponse.success(resp);
-        } catch (RuntimeException e) {
-            return ApiResponse.error(401, e.getMessage());
-        }
+        return ApiResponse.success(authService.login(request));
     }
 }

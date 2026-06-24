@@ -5,12 +5,18 @@ import { login as loginApi, register as registerApi } from '../api/auth'
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('token') || '')
   const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
+  const profile = ref(JSON.parse(localStorage.getItem('profile') || 'null') || {})
 
   function setAuth(data) {
     token.value = data.token
     user.value = { username: data.username, role: data.role, userId: data.userId }
     localStorage.setItem('token', data.token)
     localStorage.setItem('user', JSON.stringify(user.value))
+  }
+
+  function setProfile(data) {
+    profile.value = { ...profile.value, ...data }
+    localStorage.setItem('profile', JSON.stringify(profile.value))
   }
 
   async function login(username, password) {
@@ -28,8 +34,10 @@ export const useAuthStore = defineStore('auth', () => {
   function logout() {
     token.value = ''
     user.value = null
+    profile.value = {}
     localStorage.removeItem('token')
     localStorage.removeItem('user')
+    localStorage.removeItem('profile')
   }
 
   function isLoggedIn() {
@@ -44,5 +52,5 @@ export const useAuthStore = defineStore('auth', () => {
     return user.value?.userId || null
   }
 
-  return { token, user, login, register, logout, isLoggedIn, getRole, getUserId }
+  return { token, user, profile, setProfile, login, register, logout, isLoggedIn, getRole, getUserId }
 })

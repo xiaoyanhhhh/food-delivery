@@ -1,5 +1,7 @@
 package com.fooddelivery.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -10,6 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
 
     @Id
@@ -19,6 +22,7 @@ public class User {
     @Column(nullable = false, unique = true, length = 50)
     private String username;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false)
     private String password;
 
@@ -28,8 +32,14 @@ public class User {
     @Column(length = 255)
     private String address;
 
+    @Column(name = "current_lat", precision = 10, scale = 6)
+    private java.math.BigDecimal currentLat;
+
+    @Column(name = "current_lng", precision = 10, scale = 6)
+    private java.math.BigDecimal currentLng;
+
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false, length = 10, columnDefinition = "VARCHAR(10)")
     private Role role;
 
     @Column(name = "created_at")

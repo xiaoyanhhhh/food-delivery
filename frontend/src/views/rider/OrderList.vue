@@ -17,9 +17,15 @@
         <p>顾客：{{ order.customer?.username }}</p>
         <p>地址：{{ order.deliveryAddress }}</p>
         <p>金额：<b>¥{{ order.totalPrice }}</b></p>
+        <p v-if="order.deliveryFee">配送费：¥{{ order.deliveryFee }}</p>
+        <p v-if="order.estimatedDeliveryTime">预计{{ order.estimatedDeliveryTime }}分钟内送达</p>
       </div>
       <div class="order-actions">
-        <el-button v-if="order.status === 'PENDING_PICKUP'" type="primary"
+        <el-button v-if="order.status === 'READY'" type="primary"
+          @click="handleAction(order, 'PICKED_UP')">
+          确认取餐
+        </el-button>
+        <el-button v-if="order.status === 'PICKED_UP'" type="warning"
           @click="handleAction(order, 'DELIVERING')">
           开始配送
         </el-button>
@@ -33,36 +39,41 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { getRiderOrders, updateOrderStatus } from '../../api/order'
 import { ElMessage } from 'element-plus'
+import { usePolling } from '../../composables/usePolling'
 
 const orders = ref([])
 
 const statusMap = {
-  PENDING_PICKUP: '待取餐',
-  DELIVERING: '配送中',
-  COMPLETED: '已完成',
-  CANCELLED: '已取消',
+  READY: '待取餐', PICKED_UP: '已取餐', DELIVERING: '配送中',
+  COMPLETED: '已完成', CANCELLED: '已取消',
 }
 function statusLabel(s) { return statusMap[s] || s }
 function statusType(s) {
   if (s === 'COMPLETED') return 'success'
-  if (s === 'DELIVERING') return 'warning'
+  if (s === 'DELIVERING' || s === 'PICKED_UP') return 'warning'
   return ''
 }
 
-async function fetchOrders() { try { orders.value = await getRiderOrders() } catch { /* handled */ } }
+async function fetchOrders() {
+  try {
+    const data = await getRiderOrders({ page: 0, size: 20 })
+    orders.value = data.content || data
+  } catch { /* handled */ }
+}
 
 async function handleAction(order, status) {
   try {
     await updateOrderStatus(order.id, status, 'RIDER')
-    ElMessage.success(status === 'COMPLETED' ? '订单已完成' : '开始配送')
+    const msg = status === 'COMPLETED' ? '订单已完成' : status === 'DELIVERING' ? '开始配送' : '已取餐'
+    ElMessage.success(msg)
     fetchOrders()
   } catch { /* handled */ }
 }
 
-onMounted(fetchOrders)
+usePolling(fetchOrders, 15000)
 </script>
 
 <style scoped>
