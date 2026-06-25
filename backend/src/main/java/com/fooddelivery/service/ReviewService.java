@@ -27,8 +27,10 @@ public class ReviewService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("用户不存在"));
 
+        // storeId 可能是 Store 的 ID，也可能是 Merchant 的 User ID（前端用 merchant.id）
         Store store = storeRepository.findById(request.getStoreId())
-                .orElseThrow(() -> new NotFoundException("店铺不存在"));
+                .orElseGet(() -> storeRepository.findByMerchantId(request.getStoreId())
+                        .orElseThrow(() -> new NotFoundException("店铺不存在")));
 
         // 检查是否已评价该订单
         if (request.getOrderId() != null

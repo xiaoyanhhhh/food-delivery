@@ -20,7 +20,9 @@
             <el-divider direction="vertical" />
             <span>{{ store.businessHours || '09:00-22:00' }}</span>
           </div>
-          <p class="store-announcement" v-if="store.announcement">📢 {{ store.announcement }}</p>
+          <p class="store-announcement" v-if="store.announcement">
+            <el-icon :size="16"><Bell /></el-icon> {{ store.announcement }}
+          </p>
         </div>
       </div>
     </el-card>
@@ -59,7 +61,9 @@
 
     <!-- Store Map -->
     <el-card style="margin-top: 16px" v-if="store?.lat && store?.lng">
-      <template #header><h3>📍 店铺位置</h3></template>
+      <template #header>
+        <h3><el-icon :size="18"><Location /></el-icon> 店铺位置</h3>
+      </template>
       <OrderMap :store-lat="Number(store.lat)" :store-lng="Number(store.lng)"
         :store-name="store.name" :static="true" :height="300" />
       <p style="margin-top:8px;color:#909399">{{ store.address }}</p>
@@ -186,7 +190,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.store-header-card { margin-bottom: 0; }
+.store-header-card { margin-bottom: 0; border-top: 3px solid #FF8C00; }
 .store-header { display: flex; gap: 20px; }
 .store-header-info { flex: 1; }
 .store-header-info h1 { font-size: 24px; margin-bottom: 8px; }

@@ -1,7 +1,9 @@
 <template>
   <div class="page-container">
     <div style="max-width: 500px; margin: 0 auto">
-      <h1 class="page-title">👤 个人中心</h1>
+      <h1 class="page-title">
+        <el-icon :size="22"><UserFilled /></el-icon> 个人中心
+      </h1>
 
       <el-card>
         <el-descriptions title="账号信息" :column="1" border>

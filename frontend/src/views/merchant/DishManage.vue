@@ -1,7 +1,9 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <h1 class="page-title">🍽 菜品管理</h1>
+      <h1 class="page-title">
+        <el-icon :size="22"><KnifeFork /></el-icon> 菜品管理
+      </h1>
       <el-button type="primary" @click="openAdd">添加菜品</el-button>
     </div>
 

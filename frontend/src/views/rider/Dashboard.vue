@@ -1,6 +1,8 @@
 <template>
   <div class="page-container">
-    <h1 class="page-title">🛵 骑手中心</h1>
+    <h1 class="page-title">
+      <el-icon :size="22"><Van /></el-icon> 骑手中心
+    </h1>
 
     <!-- Earnings Cards -->
     <el-row :gutter="20" style="margin-bottom:20px">
@@ -23,7 +25,7 @@
         <router-link to="/rider/orders" style="text-decoration:none;color:inherit">
           <el-card class="menu-card" shadow="hover">
             <div class="menu-content">
-              <span style="font-size:48px">📦</span>
+              <el-icon :size="48" color="#FF8C00"><Tickets /></el-icon>
               <h3>我的配送</h3>
               <p>查看正在配送的订单</p>
             </div>
@@ -31,9 +33,9 @@
         </router-link>
       </el-col>
       <el-col :span="12">
-        <el-card class="menu-card" shadow="hover" @click="showAvailable = true; fetchAvailable()">
+          <el-card class="menu-card" shadow="hover" @click="showAvailable = true; fetchAvailable()">
           <div class="menu-content">
-            <span style="font-size:48px">🔍</span>
+            <el-icon :size="48" color="#FF8C00"><Search /></el-icon>
             <h3>可接订单</h3>
             <p>查看待取餐订单并接单</p>
           </div>
@@ -88,7 +90,7 @@ onMounted(() => { fetchEarnings() })
 
 <style scoped>
 .stat-card { text-align: center; padding: 10px 0; }
-.stat-value { font-size: 28px; font-weight: bold; color: #409eff; }
+.stat-value { font-size: 28px; font-weight: bold; color: #FF8C00; }
 .stat-label { font-size: 14px; color: #909399; margin-top: 4px; }
 .menu-card { cursor: pointer; text-align: center; transition: transform 0.2s; }
 .menu-card:hover { transform: translateY(-4px); }

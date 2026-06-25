@@ -47,7 +47,7 @@
           <el-button v-if="isLogin && role === 'CUSTOMER'" class="fav-btn"
             :type="favIds.includes(store.id) ? 'danger' : 'default'"
             size="small" circle @click.stop="toggleFav(store)">
-            {{ favIds.includes(store.id) ? '❤️' : '🤍' }}
+            <el-icon :size="16"><component :is="favIds.includes(store.id) ? 'StarFilled' : 'Star'" /></el-icon>
           </el-button>
         </div>
         <div class="store-info">
@@ -105,9 +105,18 @@ async function fetchStores() {
     const params = { page: currentPage.value, size: pageSize.value }
     if (activeCategory.value !== 'all') params.categoryId = activeCategory.value
     if (keyword.value) params.keyword = keyword.value
-    if (favOnly.value && favIds.value.length > 0) {
-      // Filter client-side for favorites (simple approach)
-      stores.value = (await getStores(params)).content.filter(s => favIds.value.includes(s.id))
+    if (favOnly.value) {
+      // 仅看收藏：只显示已收藏的店铺
+      if (favIds.value.length > 0) {
+        const data = await getStores(params)
+        stores.value = data.content.filter(s => favIds.value.includes(s.id))
+        totalElements.value = data.totalElements
+        totalPages.value = data.totalPages
+      } else {
+        stores.value = []
+        totalElements.value = 0
+        totalPages.value = 0
+      }
     } else {
       const data = await getStores(params)
       stores.value = data.content
@@ -167,18 +176,19 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.search-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 0; margin: -20px -20px 20px -20px; display: flex; justify-content: center; }
+.search-section { background: linear-gradient(135deg, #FF8C00 0%, #FFA500 100%); padding: 30px 0; margin: -20px -20px 20px -20px; display: flex; justify-content: center; }
 .search-bar { display: flex; align-items: center; gap: 10px; }
 .controls { display: flex; align-items: center; margin-bottom: 16px; }
 .store-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-.store-card { cursor: pointer; transition: transform 0.2s; position: relative; }
+.store-card { cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; position: relative; border-radius: 12px; border: 1px solid #EBE8E2; }
+.store-card:hover { box-shadow: 0 4px 20px rgba(255, 140, 0, 0.15); }
 .store-card:hover { transform: translateY(-4px); }
 .store-logo { position: relative; }
 .fav-btn { position: absolute; top: 8px; right: 8px; z-index: 10; }
 .store-info { padding: 12px 0 0; }
 .store-name { font-size: 18px; font-weight: bold; margin-bottom: 8px; }
 .store-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.monthly-sales { font-size: 13px; color: #f56c6c; }
+.monthly-sales { font-size: 13px; color: #FF8C00; font-weight: 500; }
 .store-bottom { display: flex; gap: 12px; font-size: 13px; color: #909399; }
 .dish-results { margin-bottom: 16px; }
 .dish-result-item { margin-bottom: 8px; cursor: pointer; }

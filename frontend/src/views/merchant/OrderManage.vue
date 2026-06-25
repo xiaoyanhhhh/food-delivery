@@ -1,6 +1,8 @@
 <template>
   <div class="page-container">
-    <h1 class="page-title">📋 订单管理</h1>
+    <h1 class="page-title">
+      <el-icon :size="22"><Document /></el-icon> 订单管理
+    </h1>
     <el-empty v-if="orders.length === 0" description="暂无订单" />
     <el-card v-for="order in orders" :key="order.id" style="margin-bottom: 16px">
       <div class="order-header">

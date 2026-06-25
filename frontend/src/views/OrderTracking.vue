@@ -1,7 +1,9 @@
 <template>
   <div class="page-container">
     <div style="max-width: 800px; margin: 0 auto">
-      <el-button @click="$router.back()" link style="margin-bottom: 16px">← 返回</el-button>
+      <el-button @click="$router.back()" link style="margin-bottom: 16px">
+        <el-icon :size="16"><ArrowLeft /></el-icon> 返回
+      </el-button>
 
       <el-card v-if="order">
         <template #header>
@@ -22,7 +24,9 @@
 
         <!-- ETA -->
         <div v-if="['DELIVERING','PICKED_UP'].includes(order.status)" class="eta">
-          <span v-if="order.estimatedDeliveryTime">🛵 预计 {{ order.estimatedDeliveryTime }} 分钟内送达</span>
+          <span v-if="order.estimatedDeliveryTime">
+            <el-icon :size="16"><Van /></el-icon> 预计 {{ order.estimatedDeliveryTime }} 分钟内送达
+          </span>
           <span v-if="order.rider"> | 骑手：{{ order.rider.username }}</span>
         </div>
 
@@ -138,7 +142,7 @@ onBeforeUnmount(()=>{if(pollTimer)clearInterval(pollTimer)})
 
 <style scoped>
 .card-header{display:flex;justify-content:space-between;align-items:center}
-.eta{background:#ecf5ff;padding:12px;border-radius:8px;color:#409eff;font-weight:bold}
+.eta{background:#FFF3E0;padding:12px;border-radius:8px;color:#FF8C00;font-weight:bold}
 .order-item{display:flex;justify-content:space-between;padding:4px 0}
 .row{display:flex;justify-content:space-between;padding:4px 0}
 .total{font-weight:bold;font-size:16px}

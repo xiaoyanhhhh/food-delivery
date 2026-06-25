@@ -43,7 +43,7 @@ const riderIcon = L.divIcon({
 })
 
 const storeIcon = L.divIcon({
-  html: '<div style="background:#409eff;border:2px solid #fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px">🏪</div>',
+  html: '<div style="background:#FF8C00;border:2px solid #fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px">🏪</div>',
   iconSize: [32, 32], iconAnchor: [16, 16]
 })
 
@@ -70,7 +70,7 @@ function initMap() {
       .addTo(map).bindPopup('收货地址')
     // Draw route
     routeLine = L.polyline([[props.storeLat, props.storeLng], [props.customerLat, props.customerLng]], {
-      color: '#409eff', weight: 3, dashArray: '8, 8'
+      color: '#FF8C00', weight: 3, dashArray: '8, 8'
     }).addTo(map)
     map.fitBounds([[props.storeLat, props.storeLng], [props.customerLat, props.customerLng]], { padding: [40, 40] })
   }
@@ -104,6 +104,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.map-wrapper { border-radius: 8px; overflow: hidden; border: 1px solid #e4e7ed; }
+.map-wrapper { border-radius: 8px; overflow: hidden; border: 1px solid #EBE8E2; }
 .map-container { width: 100%; height: 100%; }
 </style>

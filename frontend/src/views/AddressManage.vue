@@ -2,7 +2,9 @@
   <div class="page-container">
     <div style="max-width: 600px; margin: 0 auto">
       <div class="page-header">
-        <h1 class="page-title">📍 地址管理</h1>
+        <h1 class="page-title">
+          <el-icon :size="22"><LocationFilled /></el-icon> 地址管理
+        </h1>
         <el-button type="primary" :icon="Plus" @click="openDialog(null)">添加地址</el-button>
       </div>
 

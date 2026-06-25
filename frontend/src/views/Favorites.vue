@@ -1,6 +1,8 @@
 <template>
   <div class="page-container">
-    <h1 class="page-title">❤️ 我的收藏</h1>
+    <h1 class="page-title">
+      <el-icon :size="22"><StarFilled /></el-icon> 我的收藏
+    </h1>
     <el-empty v-if="stores.length === 0" description="暂无收藏">
       <el-button type="primary" @click="$router.push('/')">去逛逛</el-button>
     </el-empty>

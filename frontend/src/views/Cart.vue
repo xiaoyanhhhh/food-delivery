@@ -1,6 +1,8 @@
 <template>
   <div class="page-container">
-    <h1 class="page-title">🛒 我的购物车</h1>
+    <h1 class="page-title">
+      <el-icon :size="22"><ShoppingCart /></el-icon> 我的购物车
+    </h1>
     <el-empty v-if="cartStore.items.length === 0" description="购物车是空的">
       <el-button type="primary" @click="$router.push('/')">去逛逛</el-button>
     </el-empty>

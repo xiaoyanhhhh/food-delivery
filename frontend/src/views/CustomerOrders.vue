@@ -1,6 +1,9 @@
 <template>
   <div class="page-container">
-    <h1 class="page-title">📦 我的订单 <el-tag v-if="polling" size="small" type="success">自动刷新中</el-tag></h1>
+    <h1 class="page-title">
+      <el-icon :size="22"><Tickets /></el-icon> 我的订单
+      <el-tag v-if="polling" size="small" type="success" style="margin-left:8px">自动刷新中</el-tag>
+    </h1>
     <el-empty v-if="orders.length === 0" description="暂无订单">
       <el-button type="primary" @click="$router.push('/')">去逛逛</el-button>
     </el-empty>
@@ -117,7 +120,7 @@ async function submitReview() {
 
 <style scoped>
 .order-card { margin-bottom: 16px; transition: border-color 0.3s; }
-.order-card.updated { border-left: 4px solid #409eff; }
+.order-card.updated { border-left: 4px solid #FF8C00; }
 .order-header { display: flex; justify-content: space-between; align-items: center; }
 .order-item { display: flex; justify-content: space-between; padding: 4px 0; }
 .order-footer { display: flex; justify-content: space-between; align-items: center; }

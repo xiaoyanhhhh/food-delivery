@@ -1,6 +1,8 @@
 <template>
   <div class="page-container">
-    <h1 class="page-title">🏪 店铺管理</h1>
+    <h1 class="page-title">
+      <el-icon :size="22"><Shop /></el-icon> 店铺管理
+    </h1>
 
     <el-card v-if="store">
       <el-form :model="form" label-width="100px" style="max-width:600px">

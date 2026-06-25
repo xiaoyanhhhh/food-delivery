@@ -2,7 +2,10 @@
   <div class="auth-page">
     <el-card class="auth-card">
       <template #header>
-        <h2 class="auth-title">🍔 登录美味外卖</h2>
+        <h2 class="auth-title">
+            <el-icon :size="24"><KnifeFork /></el-icon>
+            登录美味外卖
+          </h2>
       </template>
       <el-form :model="form" :rules="rules" ref="formRef" label-width="80px">
         <el-form-item label="用户名" prop="username">
@@ -70,7 +73,7 @@ async function handleLogin() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #FF8C00 0%, #FF6347 100%);
 }
 .auth-card {
   width: 400px;

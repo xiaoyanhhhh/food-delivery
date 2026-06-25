@@ -1,3 +1,4 @@
+/* ===== CSS Reset ===== */
 * {
   margin: 0;
   padding: 0;
@@ -7,8 +8,8 @@
 body {
   font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB',
     'Microsoft YaHei', Arial, sans-serif;
-  background: #f5f7fa;
-  color: #333;
+  background: #F5F0EB;
+  color: #303133;
 }
 
 #app {
@@ -19,23 +20,204 @@ a {
   text-decoration: none;
 }
 
-/* Common page wrapper */
-.page-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
+/* ===== Element Plus CSS Variable Overrides — Warm Orange Theme ===== */
+:root {
+  --el-color-primary: #FF8C00;
+  --el-color-primary-light-3: #FFB347;
+  --el-color-primary-light-5: #FFD7A0;
+  --el-color-primary-light-7: #FFEAD4;
+  --el-color-primary-light-8: #FFF3E0;
+  --el-color-primary-light-9: #FFF9F0;
+  --el-color-primary-dark-2: #E67E00;
+  --el-color-success: #52C41A;
+  --el-color-warning: #FAAD14;
+  --el-color-danger: #FF4D4F;
+  --el-color-info: #909399;
+  --el-bg-color: #F5F0EB;
+  --el-bg-color-overlay: #FFFFFF;
+  --el-text-color-primary: #303133;
+  --el-text-color-regular: #606266;
+  --el-text-color-secondary: #909399;
+  --el-border-color: #EBE8E2;
+  --el-border-color-light: #F0EDE8;
+  --el-border-radius-base: 8px;
+  --el-border-radius-small: 4px;
 }
 
+/* ===== Page Transitions ===== */
+.page-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px;
+  animation: fd-fadeIn 0.3s ease;
+}
+
+@keyframes fd-fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Common Utilities ===== */
 .page-title {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: bold;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   color: #303133;
 }
 
-/* Card grid for dish list */
+.price-text {
+  font-size: 18px;
+  font-weight: bold;
+  color: #FF4D4F;
+}
+
+.price-text-lg {
+  font-size: 24px;
+  font-weight: bold;
+  color: #FF4D4F;
+}
+
+/* ===== Grid Layouts ===== */
+.store-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
 .dish-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 14px;
+}
+
+/* ===== Element Plus Component Style Overrides ===== */
+
+/* Card */
+.el-card {
+  border-radius: 12px !important;
+  border: 1px solid #EBE8E2 !important;
+  transition: box-shadow 0.3s, transform 0.2s;
+}
+.el-card:hover {
+  box-shadow: 0 4px 20px rgba(255, 140, 0, 0.12) !important;
+}
+
+/* Button — primary */
+.el-button--primary {
+  background-color: #FF8C00 !important;
+  border-color: #FF8C00 !important;
+}
+.el-button--primary:hover {
+  background-color: #FFA500 !important;
+  border-color: #FFA500 !important;
+}
+.el-button--primary:active {
+  background-color: #E67E00 !important;
+  border-color: #E67E00 !important;
+}
+
+/* Tag */
+.el-tag {
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+/* Input focus */
+.el-input__wrapper.is-focus {
+  box-shadow: 0 0 0 1px #FF8C00 inset !important;
+}
+.el-textarea__inner:focus {
+  box-shadow: 0 0 0 1px #FF8C00 inset !important;
+}
+
+/* Select focus */
+.el-select .el-input__wrapper.is-focus {
+  box-shadow: 0 0 0 1px #FF8C00 inset !important;
+}
+
+/* Dialog */
+.el-dialog {
+  border-radius: 12px;
+}
+
+/* Tabs */
+.el-tabs__active-bar {
+  background-color: #FF8C00 !important;
+}
+.el-tabs__item.is-active {
+  color: #FF8C00 !important;
+  font-weight: 600;
+}
+
+/* Pagination */
+.el-pagination .is-active {
+  background-color: #FF8C00 !important;
+}
+.el-pagination button:hover {
+  color: #FF8C00 !important;
+}
+
+/* Rate stars */
+.el-rate__icon.is-active {
+  color: #FFB347 !important;
+}
+
+/* Alert — warm info tint */
+.el-alert--info {
+  background-color: #FFF3E0 !important;
+  border-color: #FFD7A0 !important;
+}
+
+/* Radio */
+.el-radio__input.is-checked .el-radio__inner {
+  background-color: #FF8C00 !important;
+  border-color: #FF8C00 !important;
+}
+.el-radio__input.is-checked + .el-radio__label {
+  color: #FF8C00 !important;
+}
+
+/* Checkbox */
+.el-checkbox__input.is-checked .el-checkbox__inner {
+  background-color: #FF8C00 !important;
+  border-color: #FF8C00 !important;
+}
+.el-checkbox__input.is-checked + .el-checkbox__label {
+  color: #FF8C00 !important;
+}
+
+/* Switch */
+.el-switch.is-checked .el-switch__core {
+  background-color: #FF8C00 !important;
+  border-color: #FF8C00 !important;
+}
+
+/* Step */
+.el-step__head.is-success {
+  color: #FF8C00 !important;
+  border-color: #FF8C00 !important;
+}
+.el-step__title.is-success {
+  color: #FF8C00 !important;
+}
+
+/* Badge */
+.el-badge__content {
+  background-color: #FF4D4F !important;
+}
+
+/* Message box confirm button */
+.el-message-box__btns .el-button--primary {
+  background-color: #FF8C00 !important;
+  border-color: #FF8C00 !important;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1200px) {
+  .store-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .store-grid { grid-template-columns: 1fr; }
+  .page-container { padding: 12px; }
 }

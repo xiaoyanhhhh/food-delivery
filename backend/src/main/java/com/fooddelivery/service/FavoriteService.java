@@ -42,6 +42,7 @@ public class FavoriteService {
         favoriteRepository.deleteByUserIdAndStoreId(userId, storeId);
     }
 
+    @Transactional(readOnly = true)
     public Page<Favorite> getFavorites(Long userId, Pageable pageable) {
         return favoriteRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
     }

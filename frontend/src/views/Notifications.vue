@@ -1,7 +1,9 @@
 <template>
   <div class="page-container">
     <div class="page-header">
-      <h1 class="page-title">🔔 消息通知</h1>
+      <h1 class="page-title">
+        <el-icon :size="22"><BellFilled /></el-icon> 消息通知
+      </h1>
       <el-button v-if="notifications.length > 0" size="small" @click="handleMarkAll">全部已读</el-button>
     </div>
     <el-empty v-if="notifications.length === 0" description="暂无通知" />
