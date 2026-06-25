@@ -176,7 +176,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.search-section { background: linear-gradient(135deg, #FF8C00 0%, #FFA500 100%); padding: 30px 0; margin: -20px -20px 20px -20px; display: flex; justify-content: center; }
+.search-section { background: linear-gradient(135deg, #FF8C00 0%, #FFA500 100%); padding: 30px 0; margin: 0 -16px 20px -16px; display: flex; justify-content: center; }
 .search-bar { display: flex; align-items: center; gap: 10px; }
 .controls { display: flex; align-items: center; margin-bottom: 16px; }
 .store-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }

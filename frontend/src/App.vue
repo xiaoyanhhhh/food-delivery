@@ -10,47 +10,47 @@
       <div class="header-right" v-if="isLogin">
         <!-- Customer nav -->
         <template v-if="role === 'CUSTOMER'">
-          <el-button class="nav-btn" link @click="router.push('/cart')">
+          <el-button class="nav-btn" @click="router.push('/cart')">
             <el-icon :size="18"><ShoppingCart /></el-icon>
             <span>购物车</span>
           </el-button>
-          <el-button class="nav-btn" link @click="router.push('/my-orders')">
+          <el-button class="nav-btn" @click="router.push('/my-orders')">
             <el-icon :size="18"><Tickets /></el-icon>
             <span>我的订单</span>
           </el-button>
-          <el-button class="nav-btn" link @click="router.push('/favorites')">
+          <el-button class="nav-btn" @click="router.push('/favorites')">
             <el-icon :size="18"><Star /></el-icon>
             <span>收藏</span>
           </el-button>
           <el-badge :value="unreadCount" :hidden="unreadCount === 0" :max="99">
-            <el-button class="nav-btn icon-only" link @click="router.push('/notifications')">
+            <el-button class="nav-btn icon-only" @click="router.push('/notifications')">
               <el-icon :size="20"><Bell /></el-icon>
             </el-button>
           </el-badge>
-          <el-button class="nav-btn icon-only" link @click="router.push('/addresses')">
+          <el-button class="nav-btn icon-only" @click="router.push('/addresses')">
             <el-icon :size="20"><Location /></el-icon>
           </el-button>
         </template>
 
         <!-- Merchant nav -->
         <template v-if="role === 'MERCHANT'">
-          <el-button class="nav-btn" link @click="router.push('/merchant')">
+          <el-button class="nav-btn" @click="router.push('/merchant')">
             <el-icon :size="18"><Shop /></el-icon>
             <span>商家中心</span>
           </el-button>
-          <el-button class="nav-btn" link @click="router.push('/merchant/store')">
+          <el-button class="nav-btn" @click="router.push('/merchant/store')">
             <el-icon :size="18"><Setting /></el-icon>
             <span>店铺管理</span>
           </el-button>
-          <el-button class="nav-btn" link @click="router.push('/merchant/dishes')">
+          <el-button class="nav-btn" @click="router.push('/merchant/dishes')">
             <el-icon :size="18"><KnifeFork /></el-icon>
             <span>菜品管理</span>
           </el-button>
-          <el-button class="nav-btn" link @click="router.push('/merchant/orders')">
+          <el-button class="nav-btn" @click="router.push('/merchant/orders')">
             <el-icon :size="18"><Document /></el-icon>
             <span>订单管理</span>
           </el-button>
-          <el-button class="nav-btn" link @click="router.push('/merchant/sales')">
+          <el-button class="nav-btn" @click="router.push('/merchant/sales')">
             <el-icon :size="18"><DataAnalysis /></el-icon>
             <span>销售统计</span>
           </el-button>
@@ -58,11 +58,11 @@
 
         <!-- Rider nav -->
         <template v-if="role === 'RIDER'">
-          <el-button class="nav-btn" link @click="router.push('/rider')">
+          <el-button class="nav-btn" @click="router.push('/rider')">
             <el-icon :size="18"><Van /></el-icon>
             <span>骑手中心</span>
           </el-button>
-          <el-button class="nav-btn" link @click="router.push('/rider/orders')">
+          <el-button class="nav-btn" @click="router.push('/rider/orders')">
             <el-icon :size="18"><Tickets /></el-icon>
             <span>我的配送</span>
           </el-button>
@@ -96,7 +96,7 @@
 
       <!-- Guest nav -->
       <div class="header-right" v-else>
-        <el-button class="nav-btn" link @click="router.push('/login')">登录</el-button>
+        <el-button class="nav-btn" @click="router.push('/login')">登录</el-button>
         <el-button class="nav-btn-outlined" @click="router.push('/register')">注册</el-button>
       </div>
     </div>
@@ -112,9 +112,22 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { useCartStore } from './stores/cart'
 import { getUnreadCount } from './api/notification'
-// Icons are globally registered, listed here for clarity:
-// KnifeFork, ShoppingCart, Tickets, Star, Bell, Location, Shop, Setting,
-// Document, DataAnalysis, Van, UserFilled, ArrowDown, SwitchButton
+import {
+  ArrowDown,
+  Bell,
+  DataAnalysis,
+  Document,
+  KnifeFork,
+  Location,
+  Setting,
+  Shop,
+  ShoppingCart,
+  Star,
+  SwitchButton,
+  Tickets,
+  UserFilled,
+  Van,
+} from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -196,6 +209,19 @@ a { text-decoration: none; }
 
 /* Navigation buttons */
 .nav-btn {
+  --el-button-bg-color: transparent !important;
+  --el-button-border-color: transparent !important;
+  --el-button-hover-bg-color: transparent !important;
+  --el-button-hover-border-color: transparent !important;
+  --el-button-active-bg-color: transparent !important;
+  --el-button-active-border-color: transparent !important;
+  --el-button-text-color: rgba(255, 255, 255, 0.92) !important;
+  --el-button-hover-text-color: #fff !important;
+  --el-button-active-text-color: #fff !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  height: auto;
   color: rgba(255, 255, 255, 0.92) !important;
   font-size: 14px;
   padding: 6px 10px;
@@ -203,11 +229,23 @@ a { text-decoration: none; }
   transition: background 0.2s;
 }
 .nav-btn:hover {
-  color: #fff !important;
   background: rgba(255, 255, 255, 0.15) !important;
+  color: #fff !important;
+}
+.nav-btn:active {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+.nav-btn .el-icon {
+  color: inherit !important;
 }
 .nav-btn.icon-only {
-  padding: 6px 8px;
+  width: 34px;
+  min-width: 34px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Outlined white button for register on orange header */
@@ -253,13 +291,10 @@ a { text-decoration: none; }
 
 /* === Main Content === */
 .main-content {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 16px;
+  /* layout handled by .page-container in style.css */
 }
 .main-content.full {
-  padding: 0;
-  max-width: none;
+  /* full-screen pages (login/register) — no constraints */
 }
 
 /* === Page Title === */
