@@ -33,7 +33,7 @@
       <el-card style="margin-top: 16px">
         <div class="cart-footer">
           <span>合计：<span class="total-price">¥{{ (cartStore.totalPrice() + Number(deliveryFee)).toFixed(2) }}</span></span>
-          <el-button type="primary" size="large" @click="showOrderDialog = true">
+          <el-button type="primary" size="large" @click="openOrderDialog">
             去结算
           </el-button>
         </div>
@@ -48,9 +48,10 @@
         </el-form-item>
         <el-form-item label="快速选择">
           <el-select v-model="selectedAddressId" placeholder="从地址簿选择..."
-            @change="onAddressSelect" clearable style="width:100%">
+            @change="onAddressSelect" clearable filterable :loading="addressLoading"
+            :empty-text="addressLoading ? 'Loading...' : 'No data'" style="width:100%">
             <el-option v-for="addr in savedAddresses" :key="addr.id"
-              :label="addr.label + ' - ' + addr.detail" :value="addr.id" />
+              :label="formatAddressOption(addr)" :value="addr.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="备注">
@@ -95,6 +96,7 @@ const deliveryDistance = ref(null)
 const estimatedMinutes = ref(30)
 const savedAddresses = ref([])
 const selectedAddressId = ref(null)
+const addressLoading = ref(false)
 
 const orderForm = reactive({
   deliveryAddress: '',
@@ -109,6 +111,11 @@ async function handleRemove(id) {
   try { await cartStore.remove(id) } catch (e) { ElMessage.error(e.message || '删除失败') }
 }
 
+function openOrderDialog() {
+  showOrderDialog.value = true
+  fetchSavedAddresses()
+}
+
 async function fetchDeliveryEstimate() {
   try {
     const info = await getDeliveryEstimate(1)
@@ -119,14 +126,17 @@ async function fetchDeliveryEstimate() {
 }
 
 async function fetchSavedAddresses() {
+  addressLoading.value = true
   try {
-    savedAddresses.value = await getAddresses()
-    // 自动填充默认地址
+    const data = await getAddresses()
+    savedAddresses.value = Array.isArray(data) ? data : (data?.content || [])
     const defaultAddr = savedAddresses.value.find(a => a.isDefault)
     if (defaultAddr && !orderForm.deliveryAddress) {
       orderForm.deliveryAddress = defaultAddr.detail
+      selectedAddressId.value = defaultAddr.id
     }
-  } catch { /* 地址簿加载失败不影响 */ }
+  } catch { /* address loading failure should not block manual input */ }
+  addressLoading.value = false
 }
 
 function onAddressSelect(addrId) {
@@ -134,6 +144,12 @@ function onAddressSelect(addrId) {
   if (addr) {
     orderForm.deliveryAddress = addr.detail
   }
+}
+
+function formatAddressOption(addr) {
+  return [addr.label, addr.contactName, addr.contactPhone, addr.detail]
+    .filter(Boolean)
+    .join(' - ')
 }
 
 async function handleOrder() {
@@ -164,6 +180,7 @@ async function handleOrder() {
 
 onMounted(() => {
   fetchDeliveryEstimate()
+  fetchSavedAddresses()
 })
 </script>
 

@@ -26,7 +26,8 @@
           </div>
 
           <el-input-number v-model="quantity" :min="1" :max="99" style="margin: 16px 0" />
-          <el-button type="primary" size="large" :icon="ShoppingCart"
+          <el-button type="primary" size="large" :icon="ShoppingCart" :loading="adding"
+            :disabled="adding"
             @click="handleAddToCart" style="display: block">
             加入购物车
           </el-button>
@@ -53,6 +54,7 @@ const cartStore = useCartStore()
 const dish = ref(null)
 const quantity = ref(1)
 const specs = ref([])
+const adding = ref(false)
 
 async function fetchDish() {
   try {
@@ -64,9 +66,18 @@ async function fetchDish() {
 async function handleAddToCart() {
   if (!auth.isLoggedIn()) { router.push('/login'); return }
   try {
+    adding.value = true
     await cartStore.add(dish.value.id, quantity.value)
-    ElMessage.success(`已添加 ${quantity.value} 份 ${dish.value.name}`)
+    ElMessage({
+      type: 'success',
+      message: `\u5df2\u52a0\u5165\u8d2d\u7269\u8f66\uff1a${dish.value.name} x ${quantity.value}`,
+      duration: 1800,
+      showClose: true,
+    })
   } catch { /* handled */ }
+  finally {
+    adding.value = false
+  }
 }
 
 onMounted(fetchDish)

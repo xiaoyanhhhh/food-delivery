@@ -26,6 +26,7 @@
           <div class="dish-bottom">
             <span class="price">¥{{ dish.price }}</span>
             <el-button type="primary" size="small" :icon="Plus" circle
+              :loading="isAdding(dish.id)" :disabled="isAdding(dish.id)"
               @click.stop="handleAddToCart(dish)" />
           </div>
         </div>
@@ -53,6 +54,7 @@ const dishes = ref([])
 const categories = ref([])
 const activeCategory = ref('all')
 const keyword = ref('')
+const addingDishIds = ref(new Set())
 
 async function fetchDishes() {
   try {
@@ -84,13 +86,33 @@ async function handleAddToCart(dish) {
     return
   }
   if (auth.getRole() !== 'CUSTOMER') {
-    ElMessage.warning('仅顾客可加购')
+    ElMessage.warning('\u4ec5\u987e\u5ba2\u53ef\u52a0\u8d2d')
     return
   }
   try {
+    setAdding(dish.id, true)
     await cartStore.add(dish.id)
-    ElMessage.success(`已添加 ${dish.name} 到购物车`)
+    ElMessage({
+      type: 'success',
+      message: `\u5df2\u52a0\u5165\u8d2d\u7269\u8f66\uff1a${dish.name}`,
+      duration: 1800,
+      showClose: true,
+    })
   } catch { /* handled */ }
+  finally {
+    setAdding(dish.id, false)
+  }
+}
+
+function isAdding(dishId) {
+  return addingDishIds.value.has(dishId)
+}
+
+function setAdding(dishId, value) {
+  const next = new Set(addingDishIds.value)
+  if (value) next.add(dishId)
+  else next.delete(dishId)
+  addingDishIds.value = next
 }
 
 onMounted(() => {

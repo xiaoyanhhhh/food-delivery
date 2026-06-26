@@ -48,6 +48,7 @@
             </div>
           </div>
           <el-button type="primary" size="small" :icon="Plus" circle
+            :loading="isAdding(dish.id)" :disabled="isAdding(dish.id)"
             @click="handleAddToCart(dish)" />
         </div>
       </div>
@@ -120,6 +121,7 @@ const currentPage = ref(0)
 const pageSize = ref(10)
 const totalPages = ref(0)
 const totalElements = ref(0)
+const addingDishIds = ref(new Set())
 
 async function fetchStore() {
   try {
@@ -169,11 +171,31 @@ function handlePageChange(page) {
 
 async function handleAddToCart(dish) {
   if (!auth.isLoggedIn()) { router.push('/login'); return }
-  if (auth.getRole() !== 'CUSTOMER') { ElMessage.warning('仅顾客可加购'); return }
+  if (auth.getRole() !== 'CUSTOMER') { ElMessage.warning('\u4ec5\u987e\u5ba2\u53ef\u52a0\u8d2d'); return }
   try {
+    setAdding(dish.id, true)
     await cartStore.add(dish.id)
-    ElMessage.success(`已添加 ${dish.name}`)
+    ElMessage({
+      type: 'success',
+      message: `\u5df2\u52a0\u5165\u8d2d\u7269\u8f66\uff1a${dish.name}`,
+      duration: 1800,
+      showClose: true,
+    })
   } catch { /* handled */ }
+  finally {
+    setAdding(dish.id, false)
+  }
+}
+
+function isAdding(dishId) {
+  return addingDishIds.value.has(dishId)
+}
+
+function setAdding(dishId, value) {
+  const next = new Set(addingDishIds.value)
+  if (value) next.add(dishId)
+  else next.delete(dishId)
+  addingDishIds.value = next
 }
 
 function formatTime(time) {
