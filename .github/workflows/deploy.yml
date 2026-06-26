@@ -51,9 +51,9 @@ jobs:
 
       - name: Upload build artifacts
         env:
-          SSHPASS: ${{ secrets.TENCENT_PASSWORD }}
-          TENCENT_HOST: ${{ secrets.TENCENT_HOST }}
-          TENCENT_USER: ${{ secrets.TENCENT_USER }}
+          SSHPASS: ${{ secrets.TENCENT_PASSWORD || secrets.WAISONG }}
+          TENCENT_HOST: 122.51.83.97
+          TENCENT_USER: ubuntu
         run: |
           set -euo pipefail
           mkdir -p ~/.ssh
@@ -65,9 +65,9 @@ jobs:
 
       - name: Deploy on server
         env:
-          SSHPASS: ${{ secrets.TENCENT_PASSWORD }}
-          TENCENT_HOST: ${{ secrets.TENCENT_HOST }}
-          TENCENT_USER: ${{ secrets.TENCENT_USER }}
+          SSHPASS: ${{ secrets.TENCENT_PASSWORD || secrets.WAISONG }}
+          TENCENT_HOST: 122.51.83.97
+          TENCENT_USER: ubuntu
         run: |
           set -euo pipefail
           sshpass -e ssh "$TENCENT_USER@$TENCENT_HOST" 'bash -s' <<'REMOTE'
@@ -129,5 +129,5 @@ jobs:
       - name: Verify public site
         run: |
           set -euo pipefail
-          curl -fsS "http://${{ secrets.TENCENT_HOST }}/" >/dev/null
-          curl -fsS "http://${{ secrets.TENCENT_HOST }}/api/store-categories" >/dev/null
+          curl -fsS "http://122.51.83.97/" >/dev/null
+          curl -fsS "http://122.51.83.97/api/store-categories" >/dev/null
