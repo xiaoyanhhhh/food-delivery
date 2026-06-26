@@ -371,8 +371,8 @@ onMounted(() => {
 .dish-price-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .dish-price { color: #f04438; font-size: 26px; font-weight: 900; }
 .coupon-text { margin-left: 8px; padding: 2px 7px; border: 1px solid #ffd4c9; border-radius: 6px; color: #f04438; font-size: 12px; }
-.add-pill { min-width: 112px; border: none; border-radius: 999px; background: #ffe24a; color: #1f2329; font-weight: 800; }
-.add-pill:hover { background: #ffd31a; color: #1f2329; }
+.add-pill.el-button { min-width: 112px; border: none !important; border-radius: 999px; background: #ffe24a !important; color: #1f2329 !important; font-weight: 800; }
+.add-pill.el-button:hover { background: #ffd31a !important; color: #1f2329 !important; }
 .info-section { margin-top: 18px; padding: 24px; border-radius: 18px; background: #fff; box-shadow: 0 8px 24px rgba(31, 35, 41, 0.06); scroll-margin-top: 130px; }
 .section-title { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; }
 .section-title h2 { margin: 0; font-size: 22px; }
