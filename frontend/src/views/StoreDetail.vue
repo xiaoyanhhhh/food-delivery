@@ -5,7 +5,7 @@
     <!-- Store Header -->
     <el-card v-if="store" class="store-header-card">
       <div class="store-header">
-        <el-image :src="store.logo || 'https://placehold.co/120x120/409eff/white'"
+        <el-image :src="assetUrl(store.logo, 'https://placehold.co/120x120/409eff/white')"
           fit="cover" style="width:100px;height:100px;border-radius:8px" />
         <div class="store-header-info">
           <h1>{{ store.name }}</h1>
@@ -37,7 +37,7 @@
 
       <div v-if="dishes.length > 0" class="dish-list">
         <div v-for="dish in dishes" :key="dish.id" class="dish-item">
-          <el-image :src="dish.image || 'https://placehold.co/100x100/409eff/white?text=' + dish.name"
+          <el-image :src="assetUrl(dish.image, 'https://placehold.co/100x100/409eff/white?text=' + dish.name)"
             fit="cover" style="width:100px;height:100px;border-radius:8px" />
           <div class="dish-info">
             <h3>{{ dish.name }}</h3>
@@ -108,6 +108,7 @@ import { getStoreReviews } from '../api/review'
 import { ElMessage, ElNotification } from 'element-plus'
 import { ArrowLeft, Plus } from '@element-plus/icons-vue'
 import OrderMap from '../components/OrderMap.vue'
+import { assetUrl } from '../utils/assets'
 
 const route = useRoute()
 const router = useRouter()

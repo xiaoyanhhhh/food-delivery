@@ -14,7 +14,7 @@
             <el-upload drag action="" :auto-upload="false" :show-file-list="false"
               accept="image/png,image/jpeg,image/webp,image/gif"
               :on-change="handleLogoChange">
-              <el-image v-if="form.logo" :src="form.logo" fit="cover" class="image-preview" />
+              <el-image v-if="form.logo" :src="assetUrl(form.logo)" fit="cover" class="image-preview" />
               <div v-else class="upload-placeholder">
                 <div class="upload-plus">+</div>
                 <div>点击或拖拽上传 Logo</div>
@@ -98,6 +98,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { getMyStore, createStore, updateStore, getStoreCategories } from '../../api/store'
 import { uploadImage } from '../../api/upload'
+import { assetUrl } from '../../utils/assets'
 import { ElMessage } from 'element-plus'
 
 const store = ref(null)

@@ -18,7 +18,7 @@
     <div v-if="dishes.length > 0" class="dish-grid">
       <el-card v-for="dish in dishes" :key="dish.id" class="dish-card" shadow="hover"
         @click="$router.push(`/dishes/${dish.id}`)">
-        <el-image :src="dish.image || 'https://placehold.co/260x180/409eff/white?text=' + dish.name"
+        <el-image :src="assetUrl(dish.image, 'https://placehold.co/260x180/409eff/white?text=' + dish.name)"
           fit="cover" style="width:100%;height:180px;border-radius:8px" />
         <div class="dish-info">
           <h3>{{ dish.name }}</h3>
@@ -45,6 +45,7 @@ import { getDishes, searchDishes } from '../api/dish'
 import { getCategories } from '../api/category'
 import { ElMessage, ElNotification } from 'element-plus'
 import { Search, Plus } from '@element-plus/icons-vue'
+import { assetUrl } from '../utils/assets'
 
 const router = useRouter()
 const auth = useAuthStore()

@@ -39,7 +39,7 @@
             <el-upload drag action="" :auto-upload="false" :show-file-list="false"
               accept="image/png,image/jpeg,image/webp,image/gif"
               :on-change="handleImageChange">
-              <el-image v-if="form.image" :src="form.image" fit="cover" class="image-preview" />
+              <el-image v-if="form.image" :src="assetUrl(form.image)" fit="cover" class="image-preview" />
               <div v-else class="upload-placeholder">
                 <div class="upload-plus">+</div>
                 <div>点击或拖拽上传图片</div>
@@ -71,6 +71,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { getCategories } from '../../api/category'
 import request from '../../api/request'
 import { uploadImage } from '../../api/upload'
+import { assetUrl } from '../../utils/assets'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const dishes = ref([])

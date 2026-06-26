@@ -4,7 +4,7 @@
     <el-card v-if="dish" style="max-width: 800px; margin: 0 auto">
       <el-row :gutter="24">
         <el-col :span="10">
-          <el-image :src="dish.image || 'https://placehold.co/400x300/409eff/white?text=' + dish.name"
+          <el-image :src="assetUrl(dish.image, 'https://placehold.co/400x300/409eff/white?text=' + dish.name)"
             fit="cover" style="width:100%;border-radius:8px" />
         </el-col>
         <el-col :span="14">
@@ -46,6 +46,7 @@ import { useCartStore } from '../stores/cart'
 import { getDishDetail } from '../api/dish'
 import { ElNotification } from 'element-plus'
 import { ArrowLeft, ShoppingCart } from '@element-plus/icons-vue'
+import { assetUrl } from '../utils/assets'
 
 const route = useRoute()
 const router = useRouter()

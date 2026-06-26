@@ -16,7 +16,7 @@
 
       <el-card v-for="item in cartStore.items" :key="item.id" style="margin-bottom: 12px">
         <div class="cart-item">
-          <el-image :src="item.dish.image || 'https://placehold.co/80x80/409eff/white'"
+          <el-image :src="assetUrl(item.dish.image, 'https://placehold.co/80x80/409eff/white')"
             fit="cover" style="width:80px;height:80px;border-radius:8px" />
           <div class="item-info">
             <h3>{{ item.dish.name }}</h3>
@@ -85,6 +85,7 @@ import { createOrder, getDeliveryEstimate } from '../api/order'
 import { getAddresses } from '../api/address'
 import { ElMessage } from 'element-plus'
 import { Delete } from '@element-plus/icons-vue'
+import { assetUrl } from '../utils/assets'
 
 const router = useRouter()
 const cartStore = useCartStore()

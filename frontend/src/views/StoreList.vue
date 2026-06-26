@@ -41,7 +41,7 @@
     <div v-else-if="stores.length > 0" class="store-grid">
       <el-card v-for="store in stores" :key="store.id" class="store-card" shadow="hover" @click="$router.push(`/store/${store.id}`)">
         <div class="store-logo">
-          <el-image :src="store.logo || 'https://placehold.co/280x160/409eff/white?text=' + store.name"
+          <el-image :src="assetUrl(store.logo, 'https://placehold.co/280x160/409eff/white?text=' + store.name)"
             fit="cover" style="width:100%;height:160px;border-radius:8px" />
           <!-- Favorite button -->
           <el-button v-if="isLogin && role === 'CUSTOMER'" class="fav-btn"
@@ -82,6 +82,7 @@ import { getFavorites, addFavorite, removeFavorite } from '../api/favorite'
 import { Search } from '@element-plus/icons-vue'
 import { useAuthStore } from '../stores/auth'
 import { ElMessage } from 'element-plus'
+import { assetUrl } from '../utils/assets'
 
 const auth = useAuthStore()
 const isLogin = ref(auth.isLoggedIn())

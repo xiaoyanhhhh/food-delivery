@@ -92,11 +92,20 @@ function statusType(s){
   if(s==='COMPLETED')return'success';if(s==='CANCELLED')return'info'
   if(s==='DELIVERING'||s==='PICKED_UP')return'warning';return''
 }
-const stepOrder = ['PENDING_PAYMENT','PAID','PREPARING','DELIVERING','COMPLETED']
+const statusStepMap = {
+  PENDING_PAYMENT: 0,
+  PAID: 1,
+  PENDING_ACCEPT: 1,
+  PREPARING: 2,
+  READY: 2,
+  PENDING_PICKUP: 2,
+  PICKED_UP: 3,
+  DELIVERING: 3,
+  COMPLETED: 4,
+}
 const activeStep = computed(() => {
   if(!order.value)return 0
-  const idx = stepOrder.findIndex(s=>s===order.value.status)
-  return idx>=0?idx:0
+  return statusStepMap[order.value.status] ?? 0
 })
 function total(){
   if(!order.value)return'0.00'
