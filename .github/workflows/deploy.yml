@@ -1,0 +1,133 @@
+name: Deploy to Tencent Cloud
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+          cd dist
+          zip -r ../dist.zip .
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: Build backend
+        working-directory: backend
+        run: mvn -B -DskipTests package
+
+      - name: Install deploy tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+
+      - name: Upload build artifacts
+        env:
+          SSHPASS: ${{ secrets.TENCENT_PASSWORD }}
+          TENCENT_HOST: ${{ secrets.TENCENT_HOST }}
+          TENCENT_USER: ${{ secrets.TENCENT_USER }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "$TENCENT_HOST" >> ~/.ssh/known_hosts
+          JAR_FILE="$(find backend/target -maxdepth 1 -name 'food-delivery-backend-*.jar' ! -name '*.original' | head -n 1)"
+          test -f "$JAR_FILE"
+          sshpass -e scp frontend/dist.zip "$TENCENT_USER@$TENCENT_HOST:/tmp/food-delivery-dist.zip"
+          sshpass -e scp "$JAR_FILE" "$TENCENT_USER@$TENCENT_HOST:/tmp/food-delivery-backend.jar"
+
+      - name: Deploy on server
+        env:
+          SSHPASS: ${{ secrets.TENCENT_PASSWORD }}
+          TENCENT_HOST: ${{ secrets.TENCENT_HOST }}
+          TENCENT_USER: ${{ secrets.TENCENT_USER }}
+        run: |
+          set -euo pipefail
+          sshpass -e ssh "$TENCENT_USER@$TENCENT_HOST" 'bash -s' <<'REMOTE'
+          set -euo pipefail
+          TS="$(date +%Y%m%d%H%M%S)"
+
+          sudo mkdir -p /var/backups/food-delivery-frontend /var/backups/food-delivery-backend /www/server /www/logs /www/uploads
+
+          if [ -d /var/www/html ]; then
+            sudo tar -czf "/var/backups/food-delivery-frontend/html-$TS.tgz" -C /var/www html
+          fi
+
+          if [ -f /www/server/app.jar ]; then
+            sudo cp /www/server/app.jar "/var/backups/food-delivery-backend/app-$TS.jar"
+          fi
+
+          sudo rm -rf /var/www/html/*
+          sudo unzip -oq /tmp/food-delivery-dist.zip -d /var/www/html
+          sudo chown -R www-data:www-data /var/www/html
+
+          sudo cp /tmp/food-delivery-backend.jar /www/server/app.jar
+          sudo chown -R ubuntu:ubuntu /www/server /www/logs /www/uploads
+
+          if ! sudo grep -q "location /uploads/" /etc/nginx/sites-available/default; then
+            sudo python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("/etc/nginx/sites-available/default")
+          content = path.read_text()
+          uploads_location = '''
+              location /uploads/ {
+                  alias /www/uploads/;
+                  expires 30d;
+                  add_header Cache-Control "public";
+                  try_files $uri =404;
+              }
+          '''
+          marker = "    location /api/ {"
+          if marker in content:
+              content = content.replace(marker, uploads_location + "\\n" + marker, 1)
+          else:
+              content = content.replace("server {", "server {" + uploads_location, 1)
+          path.write_text(content)
+          PY
+          fi
+
+          sudo nginx -t
+          sudo systemctl reload nginx
+
+          sudo pkill -f '[j]ava .*app[.]jar' || true
+          sleep 2
+          sudo bash -lc 'nohup env UPLOAD_DIR=/www/uploads java -jar /www/server/app.jar > /www/logs/app.log 2>&1 < /dev/null &'
+          sleep 15
+
+          curl -fsS http://127.0.0.1:8080/api/store-categories >/tmp/food-delivery-health.json
+          curl -fsS http://127.0.0.1/ >/dev/null
+          REMOTE
+
+      - name: Verify public site
+        run: |
+          set -euo pipefail
+          curl -fsS "http://${{ secrets.TENCENT_HOST }}/" >/dev/null
+          curl -fsS "http://${{ secrets.TENCENT_HOST }}/api/store-categories" >/dev/null
