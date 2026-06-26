@@ -77,6 +77,18 @@ jobs:
 
           sudo mkdir -p /var/backups/food-delivery-frontend /var/backups/food-delivery-backend /www/server /www/logs /www/uploads
 
+          sudo pkill -TERM -f '[j]ava .*app[.]jar' || true
+          for i in $(seq 1 30); do
+            if ! sudo ss -ltnp | grep -q ':8080 '; then
+              break
+            fi
+            sleep 1
+          done
+          if sudo ss -ltnp | grep -q ':8080 '; then
+            sudo pkill -KILL -f '[j]ava .*app[.]jar' || true
+            sleep 2
+          fi
+
           if [ -d /var/www/html ]; then
             sudo tar -czf "/var/backups/food-delivery-frontend/html-$TS.tgz" -C /var/www html
           fi
@@ -118,8 +130,6 @@ jobs:
           sudo nginx -t
           sudo systemctl reload nginx
 
-          sudo pkill -f '[j]ava .*app[.]jar' || true
-          sleep 2
           sudo bash -lc 'nohup env UPLOAD_DIR=/www/uploads java -jar /www/server/app.jar > /www/logs/app.log 2>&1 < /dev/null &'
           sleep 15
 
