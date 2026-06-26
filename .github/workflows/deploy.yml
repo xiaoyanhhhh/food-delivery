@@ -56,12 +56,11 @@ jobs:
           TENCENT_USER: ubuntu
         run: |
           set -euo pipefail
-          mkdir -p ~/.ssh
-          ssh-keyscan -H "$TENCENT_HOST" >> ~/.ssh/known_hosts
+          SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=60 -o ServerAliveInterval=15 -o ServerAliveCountMax=6"
           JAR_FILE="$(find backend/target -maxdepth 1 -name 'food-delivery-backend-*.jar' ! -name '*.original' | head -n 1)"
           test -f "$JAR_FILE"
-          sshpass -e scp frontend/dist.zip "$TENCENT_USER@$TENCENT_HOST:/tmp/food-delivery-dist.zip"
-          sshpass -e scp "$JAR_FILE" "$TENCENT_USER@$TENCENT_HOST:/tmp/food-delivery-backend.jar"
+          timeout 180s sshpass -e scp $SSH_OPTS frontend/dist.zip "$TENCENT_USER@$TENCENT_HOST:/tmp/food-delivery-dist.zip"
+          timeout 600s sshpass -e scp $SSH_OPTS "$JAR_FILE" "$TENCENT_USER@$TENCENT_HOST:/tmp/food-delivery-backend.jar"
 
       - name: Deploy on server
         env:
@@ -70,7 +69,8 @@ jobs:
           TENCENT_USER: ubuntu
         run: |
           set -euo pipefail
-          sshpass -e ssh "$TENCENT_USER@$TENCENT_HOST" 'bash -s' <<'REMOTE'
+          SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=60 -o ServerAliveInterval=15 -o ServerAliveCountMax=6"
+          sshpass -e ssh $SSH_OPTS "$TENCENT_USER@$TENCENT_HOST" 'bash -s' <<'REMOTE'
           set -euo pipefail
           TS="$(date +%Y%m%d%H%M%S)"
 
