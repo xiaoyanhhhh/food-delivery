@@ -33,3 +33,5 @@ app:
     free-distance: 1.0
   payment:
     timeout-minutes: 15
+  upload:
+    dir: ${UPLOAD_DIR:uploads}

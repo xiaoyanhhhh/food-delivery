@@ -43,7 +43,7 @@ import { useAuthStore } from '../stores/auth'
 import { useCartStore } from '../stores/cart'
 import { getDishes, searchDishes } from '../api/dish'
 import { getCategories } from '../api/category'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElNotification } from 'element-plus'
 import { Search, Plus } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -92,11 +92,13 @@ async function handleAddToCart(dish) {
   try {
     setAdding(dish.id, true)
     await cartStore.add(dish.id)
-    ElMessage({
+    ElNotification({
+      title: '\u5df2\u52a0\u5165\u8d2d\u7269\u8f66',
       type: 'success',
-      message: `\u5df2\u52a0\u5165\u8d2d\u7269\u8f66\uff1a${dish.name}`,
-      duration: 1800,
-      showClose: true,
+      message: `${dish.name}\uff0c\u53ef\u5728\u53f3\u4e0a\u89d2\u8d2d\u7269\u8f66\u67e5\u770b`,
+      position: 'bottom-left',
+      duration: 2600,
+      customClass: 'cart-add-notification',
     })
   } catch { /* handled */ }
   finally {

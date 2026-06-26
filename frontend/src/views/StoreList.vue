@@ -27,11 +27,11 @@
     <!-- Dish Search Results (cross-store) -->
     <div v-if="searchMode === 'dish' && keyword && dishResults.length > 0" class="dish-results">
       <h3 style="margin-bottom:12px">搜索结果：</h3>
-      <el-card v-for="dish in dishResults" :key="dish.id" class="dish-result-item" @click="$router.push(`/store/${dish.merchant?.id || 0}`)">
+      <el-card v-for="dish in dishResults" :key="dish.id" class="dish-result-item" @click="$router.push(`/dishes/${dish.id}`)">
         <div class="dish-row">
           <span style="font-weight:bold">{{ dish.name }}</span>
           <span style="color:#f56c6c">¥{{ dish.price }}</span>
-          <span style="color:#909399;font-size:12px">来自：{{ dish.merchant?.username || '未知' }}</span>
+          <span style="color:#909399;font-size:12px">{{ '\u70b9\u51fb\u67e5\u770b\u8be6\u60c5' }}</span>
           <el-tag size="small">{{ dish.monthlySales || 0 }}份</el-tag>
         </div>
       </el-card>
@@ -75,7 +75,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { getStores, getStoreCategories } from '../api/store'
 import { getDishes } from '../api/dish'
 import { getFavorites, addFavorite, removeFavorite } from '../api/favorite'
@@ -146,7 +146,13 @@ async function fetchFavIds() {
 }
 
 function handleSearch() {
-  if (searchMode.value === 'dish' && keyword.value) {
+  const term = keyword.value.trim()
+  if (searchMode.value === 'dish') {
+    if (!term) {
+      ElMessage.warning('请输入菜品名称')
+      dishResults.value = []
+      return
+    }
     fetchDishSearch()
   } else {
     currentPage.value = 0
@@ -155,6 +161,19 @@ function handleSearch() {
 }
 
 function handleCategoryChange() { currentPage.value = 0; fetchStores() }
+
+watch(searchMode, () => {
+  currentPage.value = 0
+  dishResults.value = []
+  if (searchMode.value === 'store') fetchStores()
+})
+
+watch(keyword, (value) => {
+  if (!value) {
+    dishResults.value = []
+    if (searchMode.value === 'store') fetchStores()
+  }
+})
 
 async function toggleFav(store) {
   try {

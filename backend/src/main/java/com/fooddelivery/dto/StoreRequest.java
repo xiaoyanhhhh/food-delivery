@@ -17,6 +17,8 @@ public class StoreRequest {
     private String announcement;
     private String address;
     private String phone;
+    private BigDecimal lat;
+    private BigDecimal lng;
     private Long categoryId;
     private Boolean status;
 }

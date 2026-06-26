@@ -216,6 +216,23 @@ a {
   border-color: #FF8C00 !important;
 }
 
+/* Prominent add-to-cart feedback */
+.cart-add-notification {
+  width: 320px !important;
+  border: 2px solid #FF8C00 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 10px 28px rgba(255, 140, 0, 0.28) !important;
+}
+.cart-add-notification .el-notification__title {
+  color: #303133;
+  font-size: 17px;
+  font-weight: 700;
+}
+.cart-add-notification .el-notification__content {
+  color: #606266;
+  font-size: 14px;
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 1200px) {
   .store-grid { grid-template-columns: repeat(2, 1fr); }

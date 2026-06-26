@@ -71,6 +71,8 @@ public class StoreService {
                 .announcement(request.getAnnouncement())
                 .address(request.getAddress())
                 .phone(request.getPhone())
+                .lat(request.getLat())
+                .lng(request.getLng())
                 .category(category)
                 .merchant(merchant)
                 .build();
@@ -94,6 +96,8 @@ public class StoreService {
         if (request.getAnnouncement() != null) store.setAnnouncement(request.getAnnouncement());
         if (request.getAddress() != null) store.setAddress(request.getAddress());
         if (request.getPhone() != null) store.setPhone(request.getPhone());
+        if (request.getLat() != null) store.setLat(request.getLat());
+        if (request.getLng() != null) store.setLng(request.getLng());
         if (request.getStatus() != null) store.setStatus(request.getStatus());
         if (request.getCategoryId() != null) {
             StoreCategory category = storeCategoryRepository.findById(request.getCategoryId())

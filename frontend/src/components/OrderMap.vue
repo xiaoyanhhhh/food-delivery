@@ -38,25 +38,26 @@ let customerMarker = null
 let routeLine = null
 
 const riderIcon = L.divIcon({
-  html: '<div style="background:#f56c6c;border:2px solid #fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px">🛵</div>',
+  html: '<div style="background:#f56c6c;border:2px solid #fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;font-weight:700">&#39569;</div>',
   iconSize: [32, 32], iconAnchor: [16, 16]
 })
 
 const storeIcon = L.divIcon({
-  html: '<div style="background:#FF8C00;border:2px solid #fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px">🏪</div>',
+  html: '<div style="background:#FF8C00;border:2px solid #fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;font-weight:700">&#24215;</div>',
   iconSize: [32, 32], iconAnchor: [16, 16]
 })
 
 const customerIcon = L.divIcon({
-  html: '<div style="background:#67c23a;border:2px solid #fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px">📍</div>',
+  html: '<div style="background:#67c23a;border:2px solid #fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;font-weight:700">&#25910;</div>',
   iconSize: [32, 32], iconAnchor: [16, 16]
 })
 
 function initMap() {
   if (!mapContainer.value) return
   map = L.map(mapContainer.value).setView([props.storeLat, props.storeLng], 14)
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap',
+  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+    subdomains: ['1', '2', '3', '4'],
+    attribution: '&copy; 高德地图',
     maxZoom: 18,
   }).addTo(map)
 

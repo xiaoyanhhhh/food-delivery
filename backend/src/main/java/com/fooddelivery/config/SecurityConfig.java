@@ -3,6 +3,7 @@ package com.fooddelivery.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -32,6 +33,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 公开接口
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/uploads/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/store-categories").permitAll()
                 .requestMatchers("/api/dishes/**").permitAll()
                 .requestMatchers("/api/categories/**").permitAll()
                 .requestMatchers("/api/stores/**").permitAll()
