@@ -13,6 +13,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
@@ -47,7 +48,7 @@ jobs:
       - name: Install deploy tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y sshpass
+          sudo apt-get install -y rsync sshpass
 
       - name: Upload build artifacts
         env:
@@ -59,8 +60,8 @@ jobs:
           SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=60 -o ServerAliveInterval=15 -o ServerAliveCountMax=6"
           JAR_FILE="$(find backend/target -maxdepth 1 -name 'food-delivery-backend-*.jar' ! -name '*.original' | head -n 1)"
           test -f "$JAR_FILE"
-          timeout 180s sshpass -e scp $SSH_OPTS frontend/dist.zip "$TENCENT_USER@$TENCENT_HOST:/tmp/food-delivery-dist.zip"
-          timeout 600s sshpass -e scp $SSH_OPTS "$JAR_FILE" "$TENCENT_USER@$TENCENT_HOST:/tmp/food-delivery-backend.jar"
+          sshpass -e rsync -avz --partial --info=progress2 -e "ssh $SSH_OPTS" frontend/dist.zip "$TENCENT_USER@$TENCENT_HOST:/tmp/food-delivery-dist.zip"
+          sshpass -e rsync -avz --partial --info=progress2 -e "ssh $SSH_OPTS" "$JAR_FILE" "$TENCENT_USER@$TENCENT_HOST:/tmp/food-delivery-backend.jar"
 
       - name: Deploy on server
         env:
