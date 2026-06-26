@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -41,11 +42,13 @@ public class PaymentService {
         order.setStatus(Order.OrderStatus.PENDING_ACCEPT);
         order.setPaidAt(LocalDateTime.now());
         orderRepository.save(order);
+        BigDecimal payableAmount = order.getTotalPrice()
+                .add(order.getDeliveryFee() != null ? order.getDeliveryFee() : BigDecimal.ZERO);
 
         log.info("模拟支付成功: 订单号={}, 金额={}, 交易号={}, 支付方式={}",
-                order.getOrderNo(), order.getTotalPrice(), transactionId, paymentMethod);
+                order.getOrderNo(), payableAmount, transactionId, paymentMethod);
 
-        return new PaymentResult(transactionId, order.getTotalPrice(), paymentMethod, LocalDateTime.now());
+        return new PaymentResult(transactionId, payableAmount, paymentMethod, LocalDateTime.now());
     }
 
     public record PaymentResult(

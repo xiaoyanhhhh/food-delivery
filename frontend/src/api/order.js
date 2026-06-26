@@ -36,8 +36,8 @@ export function payOrder(id, paymentMethod = 'WECHAT') {
   return request.post(`/orders/${id}/pay`, { paymentMethod })
 }
 
-export function getDeliveryEstimate(storeId) {
-  return request.get('/orders/delivery-estimate', { params: { storeId } })
+export function getDeliveryEstimate(storeId, address = '') {
+  return request.get('/orders/delivery-estimate', { params: { storeId, address } })
 }
 
 export function reorderOrder(id) {

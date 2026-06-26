@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 @Service
 public class DeliveryService {
@@ -20,15 +19,13 @@ public class DeliveryService {
     private double freeDistance;
 
     public DeliveryInfo calculate(Long storeId, String deliveryAddress) {
-        // 模拟距离：0.5 - 5.0 km
-        double distance = 0.5 + Math.random() * 4.5;
-        distance = Math.round(distance * 100.0) / 100.0;  // 保留2位小数
+        int seed = Math.abs((String.valueOf(storeId) + "|" + String.valueOf(deliveryAddress)).hashCode());
+        double distance = 0.5 + (seed % 451) / 100.0;
+        distance = Math.round(distance * 100.0) / 100.0;
 
-        // 配送费：基础费 + 超出部分×费率
         double fee = distance <= freeDistance ? baseFee : baseFee + (distance - freeDistance) * perKmRate;
         fee = Math.round(fee * 100.0) / 100.0;
 
-        // ETA：15分钟 + 每公里5分钟
         int etaMinutes = (int) (15 + distance * 5);
 
         return new DeliveryInfo(
@@ -40,9 +37,9 @@ public class DeliveryService {
 
     @Getter
     public static class DeliveryInfo {
-        private final BigDecimal distance;    // 距离(km)
-        private final BigDecimal deliveryFee; // 配送费(元)
-        private final int estimatedMinutes;    // 预计送达时间(分钟)
+        private final BigDecimal distance;
+        private final BigDecimal deliveryFee;
+        private final int estimatedMinutes;
 
         public DeliveryInfo(BigDecimal distance, BigDecimal deliveryFee, int estimatedMinutes) {
             this.distance = distance;

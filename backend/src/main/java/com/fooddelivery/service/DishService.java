@@ -17,7 +17,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,17 +30,18 @@ public class DishService {
     private final UserRepository userRepository;
     private final StoreRepository storeRepository;
     private final com.fooddelivery.repository.DishSpecificationRepository specRepository;
+    private final com.fooddelivery.repository.OrderRepository orderRepository;
 
     public Page<Dish> getAllDishes(Pageable pageable) {
-        return dishRepository.findByStatusTrue(pageable);
+        return dishRepository.findByStatusTrue(pageable).map(this::withActualMonthlySales);
     }
 
     public List<Dish> getAllDishes() {
-        return dishRepository.findByStatusTrue();
+        return withActualMonthlySales(dishRepository.findByStatusTrue());
     }
 
     public List<Dish> getDishesByCategory(Long categoryId) {
-        return dishRepository.findByCategoryIdAndStatusTrue(categoryId);
+        return withActualMonthlySales(dishRepository.findByCategoryIdAndStatusTrue(categoryId));
     }
 
     /**
@@ -47,27 +50,29 @@ public class DishService {
     public Page<Dish> getDishesByStore(Long storeId, Pageable pageable) {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new NotFoundException("店铺不存在"));
-        return dishRepository.findByMerchantIdAndStatusTrue(store.getMerchant().getId(), pageable);
+        return dishRepository.findByMerchantIdAndStatusTrue(store.getMerchant().getId(), pageable)
+                .map(this::withActualMonthlySales);
     }
 
     public Page<Dish> getDishesByStoreAndCategory(Long storeId, Long categoryId, Pageable pageable) {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new NotFoundException("店铺不存在"));
         return dishRepository.findByMerchantIdAndCategoryIdAndStatusTrue(
-                store.getMerchant().getId(), categoryId, pageable);
+                store.getMerchant().getId(), categoryId, pageable).map(this::withActualMonthlySales);
     }
 
     public Dish getDishById(Long id) {
-        return dishRepository.findById(id)
+        Dish dish = dishRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("菜品不存在"));
+        return withActualMonthlySales(dish);
     }
 
     public Page<Dish> searchDishes(String keyword, Pageable pageable) {
-        return dishRepository.searchByName(keyword, pageable);
+        return dishRepository.searchByName(keyword, pageable).map(this::withActualMonthlySales);
     }
 
     public List<Dish> searchDishes(String keyword) {
-        return dishRepository.searchByName(keyword);
+        return withActualMonthlySales(dishRepository.searchByName(keyword));
     }
 
     public Dish createDish(DishRequest request, Long merchantId) {
@@ -126,14 +131,28 @@ public class DishService {
     }
 
     public Page<Dish> getMerchantDishes(Long merchantId, Pageable pageable) {
-        return dishRepository.findByMerchantIdAndStatusTrue(merchantId, pageable);
+        return dishRepository.findByMerchantIdAndStatusTrue(merchantId, pageable).map(this::withActualMonthlySales);
     }
 
     public List<Dish> getMerchantDishes(Long merchantId) {
-        return dishRepository.findByMerchantIdAndStatusTrue(merchantId);
+        return withActualMonthlySales(dishRepository.findByMerchantIdAndStatusTrue(merchantId));
     }
 
     public List<com.fooddelivery.entity.DishSpecification> getSpecsByDishId(Long dishId) {
         return specRepository.findByDishId(dishId);
+    }
+
+    private List<Dish> withActualMonthlySales(List<Dish> dishes) {
+        return dishes.stream().map(this::withActualMonthlySales).collect(Collectors.toList());
+    }
+
+    private Dish withActualMonthlySales(Dish dish) {
+        Long sales = orderRepository.sumCompletedQuantityByDishSince(
+                dish.getId(),
+                com.fooddelivery.entity.Order.OrderStatus.COMPLETED,
+                LocalDateTime.now().minusDays(30)
+        );
+        dish.setMonthlySales(sales != null ? sales.intValue() : 0);
+        return dish;
     }
 }

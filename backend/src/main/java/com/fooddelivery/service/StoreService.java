@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -24,28 +25,31 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final StoreCategoryRepository storeCategoryRepository;
     private final UserRepository userRepository;
+    private final com.fooddelivery.repository.OrderRepository orderRepository;
 
     public Page<Store> getStores(Long categoryId, String keyword, Pageable pageable) {
         if (keyword != null && !keyword.isEmpty() && categoryId != null) {
-            return storeRepository.searchByCategoryAndName(categoryId, keyword, pageable);
+            return storeRepository.searchByCategoryAndName(categoryId, keyword, pageable).map(this::withActualMonthlySales);
         }
         if (keyword != null && !keyword.isEmpty()) {
-            return storeRepository.searchByName(keyword, pageable);
+            return storeRepository.searchByName(keyword, pageable).map(this::withActualMonthlySales);
         }
         if (categoryId != null) {
-            return storeRepository.findByStatusTrueAndCategoryId(categoryId, pageable);
+            return storeRepository.findByStatusTrueAndCategoryId(categoryId, pageable).map(this::withActualMonthlySales);
         }
-        return storeRepository.findByStatusTrue(pageable);
+        return storeRepository.findByStatusTrue(pageable).map(this::withActualMonthlySales);
     }
 
     public Store getStoreById(Long id) {
-        return storeRepository.findById(id)
+        Store store = storeRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("店铺不存在"));
+        return withActualMonthlySales(store);
     }
 
     public Store getStoreByMerchantId(Long merchantId) {
-        return storeRepository.findByMerchantId(merchantId)
+        Store store = storeRepository.findByMerchantId(merchantId)
                 .orElseThrow(() -> new NotFoundException("您还没有创建店铺"));
+        return withActualMonthlySales(store);
     }
 
     public Store createStore(StoreRequest request, Long merchantId) {
@@ -119,5 +123,19 @@ public class StoreService {
                 .sortOrder(sortOrder != null ? sortOrder : 0)
                 .build();
         return storeCategoryRepository.save(category);
+    }
+
+    private Store withActualMonthlySales(Store store) {
+        if (store.getMerchant() == null || store.getMerchant().getId() == null) {
+            store.setMonthlySales(0);
+            return store;
+        }
+        Long sales = orderRepository.sumCompletedQuantityByMerchantSince(
+                store.getMerchant().getId(),
+                com.fooddelivery.entity.Order.OrderStatus.COMPLETED,
+                LocalDateTime.now().minusDays(30)
+        );
+        store.setMonthlySales(sales != null ? sales.intValue() : 0);
+        return store;
     }
 }

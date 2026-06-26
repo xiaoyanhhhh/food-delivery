@@ -132,4 +132,16 @@ onMounted(fetchAddresses)
 .contact { font-weight: bold; font-size: 15px; }
 .detail { color: #606266; font-size: 14px; }
 .address-actions { display: flex; gap: 4px; flex-shrink: 0; margin-left: 12px; }
+.address-actions :deep(.el-button.is-link) {
+  min-width: auto;
+  height: auto;
+  padding: 2px 6px;
+  background: transparent !important;
+}
+.address-actions :deep(.el-button.is-link.el-button--primary) {
+  color: #FF8C00;
+}
+.address-actions :deep(.el-button.is-link.el-button--danger) {
+  color: #f56c6c;
+}
 </style>

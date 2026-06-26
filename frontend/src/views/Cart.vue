@@ -118,7 +118,7 @@ function openOrderDialog() {
 
 async function fetchDeliveryEstimate() {
   try {
-    const info = await getDeliveryEstimate(1)
+    const info = await getDeliveryEstimate(1, orderForm.deliveryAddress || '')
     deliveryFee.value = Number(info.deliveryFee || 3).toFixed(2)
     deliveryDistance.value = info.distance
     estimatedMinutes.value = info.estimatedMinutes
@@ -134,6 +134,7 @@ async function fetchSavedAddresses() {
     if (defaultAddr && !orderForm.deliveryAddress) {
       orderForm.deliveryAddress = defaultAddr.detail
       selectedAddressId.value = defaultAddr.id
+      fetchDeliveryEstimate()
     }
   } catch { /* address loading failure should not block manual input */ }
   addressLoading.value = false
@@ -143,6 +144,7 @@ function onAddressSelect(addrId) {
   const addr = savedAddresses.value.find(a => a.id === addrId)
   if (addr) {
     orderForm.deliveryAddress = addr.detail
+    fetchDeliveryEstimate()
   }
 }
 

@@ -27,6 +27,7 @@ public class OrderService {
     private final DishRepository dishRepository;
     private final CartItemRepository cartItemRepository;
     private final UserRepository userRepository;
+    private final StoreRepository storeRepository;
     private final NotificationService notificationService;
     private final DeliveryService deliveryService;
 
@@ -57,6 +58,9 @@ public class OrderService {
 
         User merchant = userRepository.findById(merchantId)
                 .orElseThrow(() -> new NotFoundException("商家不存在"));
+        Store store = storeRepository.findByMerchantId(merchantId).orElse(null);
+        Long storeId = store != null ? store.getId() : merchantId;
+        DeliveryService.DeliveryInfo deliveryInfo = deliveryService.calculate(storeId, request.getDeliveryAddress());
 
         String orderNo = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
                 + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
@@ -67,6 +71,9 @@ public class OrderService {
                 .merchant(merchant)
                 .status(Order.OrderStatus.PENDING_PAYMENT)
                 .totalPrice(totalPrice)
+                .deliveryFee(deliveryInfo.getDeliveryFee())
+                .deliveryDistance(deliveryInfo.getDistance())
+                .estimatedDeliveryTime(deliveryInfo.getEstimatedMinutes())
                 .deliveryAddress(request.getDeliveryAddress())
                 .note(request.getNote())
                 .build();
@@ -187,6 +194,7 @@ public class OrderService {
                     if (order.getDeliveryFee() == null) {
                         order.setDeliveryFee(java.math.BigDecimal.valueOf(3));
                     }
+                    incrementMonthlySales(order);
                 } else {
                     throw new BusinessException("当前状态不允许此操作");
                 }
@@ -263,6 +271,9 @@ public class OrderService {
                 .merchant(oldOrder.getMerchant())
                 .status(Order.OrderStatus.PENDING_PAYMENT)
                 .totalPrice(oldOrder.getTotalPrice())
+                .deliveryFee(oldOrder.getDeliveryFee())
+                .deliveryDistance(oldOrder.getDeliveryDistance())
+                .estimatedDeliveryTime(oldOrder.getEstimatedDeliveryTime())
                 .deliveryAddress(oldOrder.getDeliveryAddress())
                 .note(oldOrder.getNote())
                 .build();
@@ -279,6 +290,25 @@ public class OrderService {
 
         newOrder.setItems(items);
         return orderRepository.save(newOrder);
+    }
+
+    private void incrementMonthlySales(Order order) {
+        int quantity = order.getItems().stream()
+                .map(OrderItem::getQuantity)
+                .filter(java.util.Objects::nonNull)
+                .mapToInt(Integer::intValue)
+                .sum();
+        storeRepository.findByMerchantId(order.getMerchant().getId()).ifPresent(store -> {
+            store.setMonthlySales((store.getMonthlySales() != null ? store.getMonthlySales() : 0) + quantity);
+            storeRepository.save(store);
+        });
+        for (OrderItem item : order.getItems()) {
+            dishRepository.findById(item.getDishId()).ifPresent(dish -> {
+                int itemQuantity = item.getQuantity() != null ? item.getQuantity() : 0;
+                dish.setMonthlySales((dish.getMonthlySales() != null ? dish.getMonthlySales() : 0) + itemQuantity);
+                dishRepository.save(dish);
+            });
+        }
     }
 
     // 发送通知 + 更新状态

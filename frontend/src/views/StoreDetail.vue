@@ -82,6 +82,9 @@
             <span class="review-user">{{ review.user?.username }}</span>
             <span class="review-time">{{ formatTime(review.createdAt) }}</span>
           </div>
+          <div v-if="reviewPurchasedText(review)" class="review-purchased">
+            已购 {{ reviewPurchasedText(review) }}
+          </div>
           <p class="review-content">{{ review.content }}</p>
           <p class="review-reply" v-if="review.merchantReply">
             <b>商家回复：</b>{{ review.merchantReply }}
@@ -205,6 +208,14 @@ function formatTime(time) {
   return time.replace('T', ' ').substring(0, 16)
 }
 
+function reviewPurchasedText(review) {
+  const items = review.order?.items || []
+  if (items.length === 0) return ''
+  return items
+    .map(item => `${item.dishName} × ${item.quantity}`)
+    .join('，')
+}
+
 onMounted(() => {
   fetchStore()
   fetchDishes()
@@ -235,6 +246,18 @@ onMounted(() => {
 .review-header { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
 .review-user { font-weight: bold; font-size: 14px; }
 .review-time { color: #c0c4cc; font-size: 12px; }
+.review-purchased {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  margin-bottom: 6px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: #f5f7fa;
+  color: #909399;
+  font-size: 12px;
+  line-height: 1.4;
+}
 .review-content { color: #606266; line-height: 1.6; }
 .review-reply { background: #f5f7fa; padding: 8px 12px; border-radius: 4px; margin-top: 6px; font-size: 13px; color: #909399; }
 .pagination-wrapper { display: flex; justify-content: center; margin-top: 20px; }
