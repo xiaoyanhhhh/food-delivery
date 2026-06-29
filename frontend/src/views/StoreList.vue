@@ -44,11 +44,18 @@
           <el-image :src="assetUrl(store.logo, 'https://placehold.co/280x160/409eff/white?text=' + store.name)"
             fit="cover" style="width:100%;height:160px;border-radius:8px" />
           <!-- Favorite button -->
-          <el-button v-if="isLogin && role === 'CUSTOMER'" class="fav-btn"
-            :type="favIds.includes(store.id) ? 'danger' : 'default'"
-            size="small" circle @click.stop="toggleFav(store)">
-            <el-icon :size="16"><component :is="favIds.includes(store.id) ? 'StarFilled' : 'Star'" /></el-icon>
-          </el-button>
+          <el-tooltip v-if="isLogin && role === 'CUSTOMER'"
+            :content="favIds.includes(store.id) ? '取消收藏' : '收藏店铺'"
+            placement="left">
+            <el-button class="fav-btn"
+              :class="{ active: favIds.includes(store.id) }"
+              size="small" circle @click.stop="toggleFav(store)">
+              <el-icon :size="16">
+                <StarFilled v-if="favIds.includes(store.id)" />
+                <Star v-else />
+              </el-icon>
+            </el-button>
+          </el-tooltip>
         </div>
         <div class="store-info">
           <h3 class="store-name">{{ store.name }}</h3>
@@ -79,7 +86,7 @@ import { ref, onMounted, watch } from 'vue'
 import { getStores, getStoreCategories } from '../api/store'
 import { getDishes } from '../api/dish'
 import { getFavorites, addFavorite, removeFavorite } from '../api/favorite'
-import { Search } from '@element-plus/icons-vue'
+import { Search, Star, StarFilled } from '@element-plus/icons-vue'
 import { useAuthStore } from '../stores/auth'
 import { ElMessage } from 'element-plus'
 import { assetUrl } from '../utils/assets'
@@ -177,13 +184,19 @@ watch(keyword, (value) => {
 })
 
 async function toggleFav(store) {
+  if (!auth.isLoggedIn() || auth.getRole() !== 'CUSTOMER') {
+    ElMessage.warning('请先用顾客账号登录后再收藏')
+    return
+  }
   try {
     if (favIds.value.includes(store.id)) {
       await removeFavorite(store.id)
       favIds.value = favIds.value.filter(id => id !== store.id)
+      ElMessage.success('已取消收藏')
     } else {
       await addFavorite(store.id)
       favIds.value.push(store.id)
+      ElMessage.success('已收藏')
     }
   } catch (e) { ElMessage.error('操作失败') }
 }
@@ -204,7 +217,22 @@ onMounted(() => {
 .store-card:hover { box-shadow: 0 4px 20px rgba(255, 140, 0, 0.15); }
 .store-card:hover { transform: translateY(-4px); }
 .store-logo { position: relative; }
-.fav-btn { position: absolute; top: 8px; right: 8px; z-index: 10; }
+.fav-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  color: #909399;
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+}
+.fav-btn:hover,
+.fav-btn.active {
+  color: #ff8c00;
+  background: #fff;
+  border-color: #fff;
+}
 .store-info { padding: 12px 0 0; }
 .store-name { font-size: 18px; font-weight: bold; margin-bottom: 8px; }
 .store-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
