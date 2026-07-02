@@ -25,11 +25,55 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     Page<Order> findByRiderOrderByCreatedAtDesc(User rider, Pageable pageable);
 
+    @Query("""
+            SELECT o FROM Order o
+            WHERE o.rider = :rider
+               OR (o.rider IS NULL
+                   AND o.dispatchCandidateRider = :rider
+                   AND o.dispatchStatus IN :dispatchStatuses)
+            ORDER BY o.createdAt DESC
+            """)
+    List<Order> findRiderWorkOrders(@Param("rider") User rider,
+                                    @Param("dispatchStatuses") List<Order.DispatchStatus> dispatchStatuses);
+
+    @Query("""
+            SELECT o FROM Order o
+            WHERE o.rider = :rider
+               OR (o.rider IS NULL
+                   AND o.dispatchCandidateRider = :rider
+                   AND o.dispatchStatus IN :dispatchStatuses)
+            ORDER BY o.createdAt DESC
+            """)
+    Page<Order> findRiderWorkOrders(@Param("rider") User rider,
+                                    @Param("dispatchStatuses") List<Order.DispatchStatus> dispatchStatuses,
+                                    Pageable pageable);
+
     List<Order> findByStatusAndRiderIsNull(Order.OrderStatus status);
 
     Page<Order> findByStatusAndRiderIsNull(Order.OrderStatus status, Pageable pageable);
 
+    @Query("""
+            SELECT o FROM Order o
+            WHERE o.rider IS NULL
+              AND o.status IN :statuses
+              AND (o.deliveryAddress IS NULL OR o.deliveryAddress NOT LIKE '%到店自取%')
+              AND (o.note IS NULL OR o.note NOT LIKE '%到店自取%')
+            """)
+    Page<Order> findAvailableForRider(@Param("statuses") List<Order.OrderStatus> statuses, Pageable pageable);
+
+    @Query("""
+            SELECT o FROM Order o
+            WHERE o.rider IS NULL
+              AND o.status IN :statuses
+              AND (o.deliveryAddress IS NULL OR o.deliveryAddress NOT LIKE '%到店自取%')
+              AND (o.note IS NULL OR o.note NOT LIKE '%到店自取%')
+            """)
+    List<Order> findAvailableForRider(@Param("statuses") List<Order.OrderStatus> statuses);
+
     List<Order> findByStatusAndCreatedAtBefore(Order.OrderStatus status, LocalDateTime time);
+
+    List<Order> findByDispatchStatusInAndRiderIsNullAndDispatchDeadlineAtBefore(
+            List<Order.DispatchStatus> dispatchStatuses, LocalDateTime time);
 
     @Query("""
             SELECT COALESCE(SUM(i.quantity), 0)

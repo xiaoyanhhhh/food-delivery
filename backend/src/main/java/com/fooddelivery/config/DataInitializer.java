@@ -26,6 +26,7 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         if (userRepository.findByUsername("zhangsan").isPresent()) {
+            ensureRiderTypes();
             log.info("数据库已有测试数据，跳过初始化");
             return;
         }
@@ -145,9 +146,9 @@ public class DataInitializer implements CommandLineRunner {
         createDish("芒果慕斯杯", "新鲜芒果慕斯配芒果果粒，清爽不腻", new BigDecimal("18.00"), "", c7, s6, 890);
 
         // ========== 6. 创建骑手账号 ==========
-        createUser("rider01", "123456", "13800001001", User.Role.RIDER, null);
-        createUser("rider02", "123456", "13800001002", User.Role.RIDER, null);
-        createUser("rider03", "123456", "13800001003", User.Role.RIDER, null);
+        createUser("rider01", "123456", "13800001001", User.Role.RIDER, null, User.RiderType.FULL_TIME);
+        createUser("rider02", "123456", "13800001002", User.Role.RIDER, null, User.RiderType.PART_TIME);
+        createUser("rider03", "123456", "13800001003", User.Role.RIDER, null, User.RiderType.FULL_TIME);
         log.info("✅ 3名骑手账号创建完成");
 
         log.info("========================================");
@@ -164,14 +165,36 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private User createUser(String username, String password, String phone, User.Role role, String address) {
+        return createUser(username, password, phone, role, address,
+                role == User.Role.RIDER ? User.RiderType.PART_TIME : null);
+    }
+
+    private User createUser(String username, String password, String phone, User.Role role, String address,
+                            User.RiderType riderType) {
         User user = User.builder()
                 .username(username)
                 .password(passwordEncoder.encode(password))
                 .phone(phone)
                 .role(role)
+                .riderType(riderType)
                 .address(address)
                 .build();
         return userRepository.save(user);
+    }
+
+    private void ensureRiderTypes() {
+        setRiderType("rider01", User.RiderType.FULL_TIME);
+        setRiderType("rider02", User.RiderType.PART_TIME);
+        setRiderType("rider03", User.RiderType.FULL_TIME);
+    }
+
+    private void setRiderType(String username, User.RiderType riderType) {
+        userRepository.findByUsername(username).ifPresent(user -> {
+            if (user.getRole() == User.Role.RIDER && user.getRiderType() != riderType) {
+                user.setRiderType(riderType);
+                userRepository.save(user);
+            }
+        });
     }
 
     private StoreCategory createStoreCategory(String name, String icon, int sortOrder) {

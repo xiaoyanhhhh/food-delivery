@@ -4,10 +4,14 @@ import com.fooddelivery.dto.ApiResponse;
 import com.fooddelivery.dto.LoginRequest;
 import com.fooddelivery.dto.LoginResponse;
 import com.fooddelivery.dto.RegisterRequest;
+import com.fooddelivery.entity.User;
 import com.fooddelivery.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -24,5 +28,18 @@ public class AuthController {
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         return ApiResponse.success(authService.login(request));
+    }
+
+    @GetMapping("/profile")
+    public ApiResponse<User> profile(Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        return ApiResponse.success(authService.getProfile(userId));
+    }
+
+    @PutMapping("/profile")
+    public ApiResponse<User> updateProfile(@RequestBody Map<String, String> body,
+                                           Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        return ApiResponse.success(authService.updateProfile(userId, body));
     }
 }

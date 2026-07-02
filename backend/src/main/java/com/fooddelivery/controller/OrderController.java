@@ -115,6 +115,27 @@ public class OrderController {
         return ApiResponse.success(orderService.acceptOrderByRider(id, riderId));
     }
 
+    @PostMapping("/{id}/no-rider")
+    public ApiResponse<Order> requestNoRiderDispatch(@PathVariable Long id,
+                                                      Authentication authentication) {
+        Long merchantId = (Long) authentication.getPrincipal();
+        return ApiResponse.success(orderService.requestNoRiderDispatch(id, merchantId));
+    }
+
+    @PostMapping("/{id}/dispatch/accept")
+    public ApiResponse<Order> acceptDispatchOffer(@PathVariable Long id,
+                                                  Authentication authentication) {
+        Long riderId = (Long) authentication.getPrincipal();
+        return ApiResponse.success(orderService.acceptDispatchOffer(id, riderId));
+    }
+
+    @PostMapping("/{id}/dispatch/reject")
+    public ApiResponse<Order> rejectDispatchOffer(@PathVariable Long id,
+                                                  Authentication authentication) {
+        Long riderId = (Long) authentication.getPrincipal();
+        return ApiResponse.success(orderService.rejectDispatchOffer(id, riderId));
+    }
+
     @PostMapping("/{id}/reorder")
     public ApiResponse<Order> reorder(@PathVariable Long id, Authentication authentication) {
         Long customerId = (Long) authentication.getPrincipal();

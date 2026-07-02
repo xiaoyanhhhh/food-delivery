@@ -63,10 +63,22 @@
       <div class="checkout-sheet">
         <section class="delivery-card">
           <div class="delivery-tabs">
-            <button class="active">外卖配送</button>
-            <button type="button">到店自取</button>
+            <button
+              type="button"
+              :class="{ active: deliveryMethod === 'delivery' }"
+              @click="setDeliveryMethod('delivery')"
+            >
+              外卖配送
+            </button>
+            <button
+              type="button"
+              :class="{ active: deliveryMethod === 'pickup' }"
+              @click="setDeliveryMethod('pickup')"
+            >
+              到店自取
+            </button>
           </div>
-          <div class="address-row">
+          <div v-if="deliveryMethod === 'delivery'" class="address-row">
             <div>
               <span class="section-kicker">选择您的收货地址</span>
               <el-input
@@ -86,16 +98,39 @@
               <el-option v-for="addr in savedAddresses" :key="addr.id" :label="formatAddressOption(addr)" :value="addr.id" />
             </el-select>
           </div>
-          <div class="time-options">
-            <div class="time-option active">
-              <span>标准配送</span>
-              <strong>{{ estimatedMinutes || 30 }} 分钟内送达</strong>
-            </div>
-            <div class="time-option">
-              <span>预约配送</span>
-              <strong>稍后可选</strong>
-            </div>
+          <div v-else class="pickup-panel">
+            <span class="section-kicker">到店自取</span>
+            <p>到店后向商家出示订单信息即可取餐。</p>
           </div>
+          <div class="time-options">
+            <button
+              type="button"
+              class="time-option"
+              :class="{ active: deliveryTimeType === 'standard' }"
+              @click="setDeliveryTimeType('standard')"
+            >
+              <span>标准配送</span>
+              <strong>{{ deliveryMethod === 'pickup' ? '立即备餐' : `${estimatedMinutes || 30} 分钟内送达` }}</strong>
+            </button>
+            <button
+              type="button"
+              class="time-option"
+              :class="{ active: deliveryTimeType === 'scheduled' }"
+              @click="setDeliveryTimeType('scheduled')"
+            >
+              <span>预约配送</span>
+              <strong>{{ scheduledTime || '选择时间' }}</strong>
+            </button>
+          </div>
+          <el-time-select
+            v-if="deliveryTimeType === 'scheduled'"
+            v-model="scheduledTime"
+            class="schedule-picker"
+            start="10:00"
+            step="00:30"
+            end="22:00"
+            placeholder="选择预约时间"
+          />
         </section>
 
         <section class="checkout-items">
@@ -116,8 +151,11 @@
 
         <section class="fee-card">
           <div><span>商品原价</span><strong>¥{{ money(subtotal) }}</strong></div>
-          <div><span>用户配送费</span><strong>¥{{ deliveryFee }}</strong></div>
-          <div><span>美味红包</span><em>暂无可用红包</em></div>
+          <div><span>用户配送费</span><strong>¥{{ effectiveDeliveryFee }}</strong></div>
+          <button type="button" class="coupon-row" @click="showCouponDialog = true">
+            <span>红包</span>
+            <em>暂无可用红包</em>
+          </button>
           <div><span>商家优惠</span><strong class="discount">- ¥0.00</strong></div>
         </section>
 
@@ -137,6 +175,13 @@
         </div>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="showCouponDialog" title="选择红包" width="420px" class="coupon-dialog">
+      <el-empty description="暂无可用红包" :image-size="90" />
+      <template #footer>
+        <el-button type="primary" @click="showCouponDialog = false">知道了</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -153,6 +198,7 @@ import { assetUrl } from '../utils/assets'
 const router = useRouter()
 const cartStore = useCartStore()
 const showOrderDialog = ref(false)
+const showCouponDialog = ref(false)
 const ordering = ref(false)
 const deliveryFee = ref('3.00')
 const deliveryDistance = ref(null)
@@ -160,6 +206,9 @@ const estimatedMinutes = ref(30)
 const savedAddresses = ref([])
 const selectedAddressId = ref(null)
 const addressLoading = ref(false)
+const deliveryMethod = ref('delivery')
+const deliveryTimeType = ref('standard')
+const scheduledTime = ref('')
 let estimateTimer = null
 
 const orderForm = reactive({
@@ -168,7 +217,8 @@ const orderForm = reactive({
 })
 
 const subtotal = computed(() => cartStore.totalPrice())
-const payable = computed(() => subtotal.value + Number(deliveryFee.value || 0))
+const effectiveDeliveryFee = computed(() => (deliveryMethod.value === 'pickup' ? '0.00' : deliveryFee.value))
+const payable = computed(() => subtotal.value + Number(effectiveDeliveryFee.value || 0))
 const itemCount = computed(() => cartStore.items.reduce((sum, item) => sum + Number(item.quantity || 0), 0))
 
 function money(value) {
@@ -186,10 +236,24 @@ async function handleRemove(id) {
 function openOrderDialog() {
   showOrderDialog.value = true
   fetchSavedAddresses()
-  fetchDeliveryEstimate()
+  if (deliveryMethod.value === 'delivery') fetchDeliveryEstimate()
+}
+
+function setDeliveryMethod(method) {
+  deliveryMethod.value = method
+  if (method === 'pickup') {
+    selectedAddressId.value = null
+  } else {
+    fetchDeliveryEstimate()
+  }
+}
+
+function setDeliveryTimeType(type) {
+  deliveryTimeType.value = type
 }
 
 async function fetchDeliveryEstimate() {
+  if (deliveryMethod.value !== 'delivery') return
   try {
     const info = await getDeliveryEstimate(1, orderForm.deliveryAddress || '')
     deliveryFee.value = Number(info.deliveryFee || 3).toFixed(2)
@@ -228,8 +292,12 @@ function formatAddressOption(addr) {
 }
 
 async function handleOrder() {
-  if (!orderForm.deliveryAddress || !orderForm.deliveryAddress.trim()) {
+  if (deliveryMethod.value === 'delivery' && (!orderForm.deliveryAddress || !orderForm.deliveryAddress.trim())) {
     ElMessage.warning('请填写配送地址')
+    return
+  }
+  if (deliveryTimeType.value === 'scheduled' && !scheduledTime.value) {
+    ElMessage.warning('请选择预约配送时间')
     return
   }
   ordering.value = true
@@ -240,8 +308,12 @@ async function handleOrder() {
     }))
     await createOrder({
       items,
-      deliveryAddress: orderForm.deliveryAddress.trim(),
-      note: orderForm.note || '',
+      deliveryAddress: deliveryMethod.value === 'pickup' ? '到店自取' : orderForm.deliveryAddress.trim(),
+      note: [
+        deliveryMethod.value === 'pickup' ? '到店自取' : '',
+        deliveryTimeType.value === 'scheduled' ? `预约配送：${scheduledTime.value}` : '',
+        orderForm.note || '',
+      ].filter(Boolean).join('；'),
     })
     ElMessage.success('下单成功，请尽快支付')
     showOrderDialog.value = false
@@ -255,7 +327,9 @@ async function handleOrder() {
 
 watch(() => orderForm.deliveryAddress, () => {
   clearTimeout(estimateTimer)
-  estimateTimer = setTimeout(fetchDeliveryEstimate, 400)
+  if (deliveryMethod.value === 'delivery') {
+    estimateTimer = setTimeout(fetchDeliveryEstimate, 400)
+  }
 })
 
 onMounted(() => {
@@ -284,15 +358,20 @@ onMounted(() => {
 .checkout-sheet { display: grid; gap: 16px; }
 .delivery-card, .checkout-items, .fee-card, .note-card { padding: 18px; border-radius: 16px; background: #fff; border: 1px solid #edf0f4; }
 .delivery-tabs { display: grid; grid-template-columns: 1fr 1fr; margin: -18px -18px 18px; overflow: hidden; border-radius: 16px 16px 0 0; background: #f2f3f5; }
-.delivery-tabs button { min-height: 58px; border: 0; background: transparent; color: #73777f; font-size: 18px; font-weight: 800; }
-.delivery-tabs button.active { background: #fff; color: #1f2329; }
+.delivery-tabs button { min-height: 58px; border: 0; background: transparent; color: #73777f; font-size: 18px; font-weight: 800; cursor: pointer; transition: all 0.2s; }
+.delivery-tabs button:hover { color: #ff7a00; background: rgba(255, 255, 255, 0.55); }
+.delivery-tabs button.active { background: #fff; color: #1f2329; box-shadow: inset 0 -3px 0 #ff8c00; }
 .address-row { display: grid; grid-template-columns: 1fr 260px; gap: 12px; align-items: end; }
+.pickup-panel { padding: 4px 0 2px; }
+.pickup-panel p { margin: 0; color: #606266; }
 .section-kicker { display: block; margin-bottom: 8px; color: #ff7a00; font-size: 22px; font-weight: 900; }
 .time-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
-.time-option { padding: 14px; border: 1px solid #e5e7eb; border-radius: 12px; }
+.time-option { display: block; width: 100%; text-align: left; padding: 14px; border: 1px solid #e5e7eb; border-radius: 12px; background: #fff; cursor: pointer; transition: all 0.2s; }
+.time-option:hover { border-color: #ffd7a0; background: #fff9f0; }
 .time-option.active { border-color: #ffe24a; background: #fffdf0; box-shadow: inset 0 0 0 2px #ffe24a; }
 .time-option span { display: block; color: #606266; margin-bottom: 6px; }
 .time-option strong { font-size: 20px; }
+.schedule-picker { width: 100%; margin-top: 12px; }
 .store-line { margin-bottom: 12px; color: #606266; font-weight: 700; }
 .checkout-item { display: grid; grid-template-columns: 58px 1fr auto; gap: 12px; align-items: center; padding: 10px 0; }
 .checkout-item + .checkout-item { border-top: 1px solid #f0f1f3; }
@@ -300,7 +379,11 @@ onMounted(() => {
 .checkout-item h4 { margin: 0 0 4px; font-size: 16px; }
 .checkout-item p { margin: 0; color: #909399; }
 .fee-card { display: grid; gap: 12px; }
-.fee-card div { display: flex; justify-content: space-between; align-items: center; }
+.fee-card div,
+.coupon-row { display: flex; justify-content: space-between; align-items: center; }
+.coupon-row { width: 100%; padding: 0; border: 0; background: transparent; cursor: pointer; font: inherit; }
+.coupon-row:hover span,
+.coupon-row:hover em { color: #ff8c00; }
 .fee-card span { color: #606266; }
 .fee-card strong { font-size: 18px; }
 .fee-card em { color: #ff4d4f; font-style: normal; }

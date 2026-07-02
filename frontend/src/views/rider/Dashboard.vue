@@ -37,18 +37,23 @@
           <div class="menu-content">
             <el-icon :size="48" color="#FF8C00"><Search /></el-icon>
             <h3>可接订单</h3>
-            <p>查看待取餐订单并接单</p>
+            <p>商家接单后即可抢单</p>
           </div>
         </el-card>
       </el-col>
     </el-row>
 
     <el-dialog v-model="showAvailable" title="可接订单" width="650px">
-      <el-empty v-if="availableOrders.length === 0" description="暂无待接订单" />
+      <el-empty v-if="availableOrders.length === 0" description="暂无可接订单" />
       <el-card v-for="order in availableOrders" :key="order.id" style="margin-bottom:12px">
         <div class="order-header">
           <span>订单号：{{ order.orderNo }}</span>
-          <el-tag>待取餐</el-tag>
+          <div class="tag-row">
+            <el-tag v-if="order.dispatchStatus && order.dispatchStatus !== 'NONE'" type="danger">
+              {{ dispatchLabel(order.dispatchStatus) }}
+            </el-tag>
+            <el-tag :type="order.status === 'PREPARING' ? 'warning' : ''">{{ statusLabel(order.status) }}</el-tag>
+          </div>
         </div>
         <el-divider />
         <div v-for="item in order.items" :key="item.id"><span>{{ item.dishName }} × {{ item.quantity }}</span></div>
@@ -56,8 +61,12 @@
           <p>商家：{{ order.merchant?.username }}</p>
           <p>地址：{{ order.deliveryAddress }}</p>
           <p v-if="order.deliveryFee">配送费：¥{{ order.deliveryFee }}</p>
+          <p v-if="order.dispatchSurcharge" class="order-boost">无人派送加价 +¥{{ Number(order.dispatchSurcharge).toFixed(2) }}</p>
+          <p v-if="order.status === 'PREPARING'" class="order-hint">商家已接单制作中，可提前接单，出餐后才能取餐配送</p>
         </div>
-        <el-button type="primary" style="margin-top:8px" @click="handleAccept(order)">接单</el-button>
+        <el-button type="primary" style="margin-top:8px" @click="handleAccept(order)">
+          {{ order.status === 'PREPARING' ? '提前接单' : '接单' }}
+        </el-button>
       </el-card>
     </el-dialog>
   </div>
@@ -68,10 +77,31 @@ import { ref, reactive, onMounted } from 'vue'
 import { getAvailableOrders, acceptOrder } from '../../api/order'
 import request from '../../api/request'
 import { ElMessage } from 'element-plus'
+import { usePolling } from '../../composables/usePolling'
 
 const showAvailable = ref(false)
 const availableOrders = ref([])
 const earnings = reactive({ todayEarnings: '0.00', totalEarnings: '0.00', todayCompleted: 0, totalCompleted: 0 })
+
+const statusMap = {
+  PREPARING: '商家制作中',
+  READY: '待取餐',
+  PENDING_PICKUP: '待取餐',
+}
+
+function statusLabel(status) {
+  return statusMap[status] || status
+}
+
+function dispatchLabel(status) {
+  const map = {
+    REQUESTED: '加价派单',
+    REJECTED: '等待强派',
+    ACCEPTED: '已派单',
+    FORCE_ASSIGNED: '强制派单',
+  }
+  return map[status] || status
+}
 
 async function fetchEarnings() {
   try { Object.assign(earnings, await request.get('/rider/earnings')) } catch { /* handled */ }
@@ -86,6 +116,7 @@ async function handleAccept(order) {
 }
 
 onMounted(() => { fetchEarnings() })
+usePolling(() => { if (showAvailable.value) fetchAvailable() }, 5000)
 </script>
 
 <style scoped>
@@ -98,4 +129,7 @@ onMounted(() => { fetchEarnings() })
 .menu-content h3 { margin: 12px 0 6px; font-size: 18px; }
 .menu-content p { color: #909399; font-size: 14px; }
 .order-header { display: flex; justify-content: space-between; }
+.order-hint { color: #e6a23c; }
+.order-boost { color: #f56c6c; font-weight: 700; }
+.tag-row { display: flex; align-items: center; gap: 6px; }
 </style>

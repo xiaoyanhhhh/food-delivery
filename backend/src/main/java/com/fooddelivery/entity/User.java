@@ -42,6 +42,10 @@ public class User {
     @Column(nullable = false, length = 10, columnDefinition = "VARCHAR(10)")
     private Role role;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rider_type", length = 20, columnDefinition = "VARCHAR(20)")
+    private RiderType riderType;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -54,8 +58,16 @@ public class User {
         RIDER       // 骑手
     }
 
+    public enum RiderType {
+        FULL_TIME,  // 全职
+        PART_TIME   // 兼职
+    }
+
     @PrePersist
     protected void onCreate() {
+        if (role == Role.RIDER && riderType == null) {
+            riderType = RiderType.PART_TIME;
+        }
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }

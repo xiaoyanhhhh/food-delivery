@@ -29,7 +29,7 @@
         <div><span>共 {{ itemsCount(order) }} 件</span></div>
         <div class="summary-lines">
           <span>商品小计：{{ formatMoney(orderSubtotal(order)) }}</span>
-          <span v-if="Number(order.deliveryFee || 0) > 0">配送费：{{ formatMoney(order.deliveryFee) }}</span>
+          <span v-if="Number(orderDeliveryFee(order) || 0) > 0">配送费：{{ formatMoney(orderDeliveryFee(order)) }}</span>
           <b>应付：{{ formatMoney(orderPayable(order)) }}</b>
         </div>
       </div>
@@ -38,6 +38,7 @@
         <el-button v-if="order.status === 'PENDING_PAYMENT'" type="primary" size="small" @click="handlePay(order)">立即支付</el-button>
         <el-button v-if="['PENDING_PAYMENT','PAID','PENDING_ACCEPT'].includes(order.status)" type="danger" size="small" @click="handleCancel(order)">取消</el-button>
         <el-button v-if="!['PENDING_PAYMENT','COMPLETED','CANCELLED'].includes(order.status)" type="warning" size="small" @click="$router.push(`/orders/${order.id}/track`)">追踪</el-button>
+        <el-button v-if="canConfirmPickup(order)" type="success" size="small" @click="handleConfirmPickup(order)">确认取餐</el-button>
         <el-button v-if="order.status === 'COMPLETED'" type="success" size="small"
           :loading="reorderingId === order.id" @click="handleReorder(order)">再来一单</el-button>
         <el-button v-if="order.status === 'COMPLETED'" type="primary" size="small" @click="showReview(order)">评价</el-button>
@@ -112,8 +113,16 @@ function orderSubtotal(order) {
   return Number(order.totalPrice || 0)
 }
 
+function isPickupOrder(order) {
+  return (order.deliveryAddress || '').includes('到店自取') || (order.note || '').includes('到店自取')
+}
+
+function orderDeliveryFee(order) {
+  return isPickupOrder(order) ? 0 : Number(order.deliveryFee || 0)
+}
+
 function orderPayable(order) {
-  return orderSubtotal(order) + Number(order.deliveryFee || 0)
+  return orderSubtotal(order) + orderDeliveryFee(order)
 }
 
 function itemsCount(order) {
@@ -149,6 +158,19 @@ async function handleCancel(order) {
     ElMessage.success('已取消')
     fetchOrders()
   } catch { /* handled */ }
+}
+
+function canConfirmPickup(order) {
+  return isPickupOrder(order) && ['READY', 'PENDING_PICKUP'].includes(order.status)
+}
+
+async function handleConfirmPickup(order) {
+  try {
+    await ElMessageBox.confirm('确认您已到店取到餐了吗？确认后订单将完成。', '确认取餐', { type: 'success' })
+    await updateOrderStatus(order.id, 'COMPLETED', 'CUSTOMER')
+    ElMessage.success('取餐成功，订单已完成')
+    fetchOrders()
+  } catch { /* cancelled or handled */ }
 }
 
 async function handleReorder(order) {

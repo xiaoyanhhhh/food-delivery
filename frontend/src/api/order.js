@@ -24,12 +24,32 @@ export function getOrderDetail(id) {
   return request.get(`/orders/${id}`)
 }
 
+export function getOrderMessages(id) {
+  return request.get(`/orders/${id}/messages`)
+}
+
+export function sendOrderMessage(id, content) {
+  return request.post(`/orders/${id}/messages`, { content })
+}
+
 export function updateOrderStatus(id, status, role) {
   return request.put(`/orders/${id}/status`, { status, role })
 }
 
 export function acceptOrder(id) {
   return request.post(`/orders/${id}/accept`)
+}
+
+export function requestNoRiderDispatch(id) {
+  return request.post(`/orders/${id}/no-rider`)
+}
+
+export function acceptDispatchOffer(id) {
+  return request.post(`/orders/${id}/dispatch/accept`)
+}
+
+export function rejectDispatchOffer(id) {
+  return request.post(`/orders/${id}/dispatch/reject`)
 }
 
 export function payOrder(id, paymentMethod = 'WECHAT') {

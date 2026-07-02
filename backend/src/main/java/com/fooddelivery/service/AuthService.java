@@ -6,10 +6,13 @@ import com.fooddelivery.dto.LoginResponse;
 import com.fooddelivery.dto.RegisterRequest;
 import com.fooddelivery.entity.User;
 import com.fooddelivery.exception.BusinessException;
+import com.fooddelivery.exception.NotFoundException;
 import com.fooddelivery.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -39,13 +42,14 @@ public class AuthService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .phone(request.getPhone())
                 .role(role)
+                .riderType(role == User.Role.RIDER ? User.RiderType.PART_TIME : null)
                 .address(request.getAddress())
                 .build();
 
         userRepository.save(user);
 
         String token = jwtUtil.generateToken(user.getId(), user.getUsername(), user.getRole().name());
-        return new LoginResponse(token, user.getUsername(), user.getRole().name(), user.getId());
+        return toLoginResponse(token, user);
     }
 
     public LoginResponse login(LoginRequest request) {
@@ -57,6 +61,49 @@ public class AuthService {
         }
 
         String token = jwtUtil.generateToken(user.getId(), user.getUsername(), user.getRole().name());
-        return new LoginResponse(token, user.getUsername(), user.getRole().name(), user.getId());
+        return toLoginResponse(token, user);
+    }
+
+    public User getProfile(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("用户不存在"));
+    }
+
+    public User updateProfile(Long userId, Map<String, String> body) {
+        User user = getProfile(userId);
+        String phone = body.get("phone");
+        if (phone != null && !phone.isBlank() && !phone.equals(user.getPhone())) {
+            userRepository.findByPhone(phone).ifPresent(existing -> {
+                if (!existing.getId().equals(userId)) {
+                    throw new BusinessException("手机号已注册");
+                }
+            });
+            user.setPhone(phone);
+        }
+        String address = body.get("address");
+        if (address != null) {
+            user.setAddress(address);
+        }
+        String riderType = body.get("riderType");
+        if (user.getRole() == User.Role.RIDER && riderType != null && !riderType.isBlank()) {
+            try {
+                user.setRiderType(User.RiderType.valueOf(riderType));
+            } catch (IllegalArgumentException e) {
+                throw new BusinessException("无效的骑手类型");
+            }
+        }
+        return userRepository.save(user);
+    }
+
+    private LoginResponse toLoginResponse(String token, User user) {
+        return new LoginResponse(
+                token,
+                user.getUsername(),
+                user.getRole().name(),
+                user.getId(),
+                user.getPhone(),
+                user.getAddress(),
+                user.getRiderType() != null ? user.getRiderType().name() : null
+        );
     }
 }

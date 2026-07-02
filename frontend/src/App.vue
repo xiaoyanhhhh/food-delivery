@@ -4,7 +4,7 @@
       <div class="header-left">
         <span class="logo" @click="goHome">
           <el-icon :size="22"><KnifeFork /></el-icon>
-          <span class="logo-text">美味外卖</span>
+          <span class="logo-text">外卖</span>
         </span>
       </div>
       <div class="header-right" v-if="isLogin">

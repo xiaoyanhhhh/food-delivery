@@ -4,7 +4,7 @@
       <template #header>
         <h2 class="auth-title">
             <el-icon :size="24"><KnifeFork /></el-icon>
-            登录美味外卖
+            登录外卖
           </h2>
       </template>
       <el-form :model="form" :rules="rules" ref="formRef" label-width="80px">

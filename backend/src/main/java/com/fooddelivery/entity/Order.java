@@ -36,9 +36,18 @@ public class Order {
     @JoinColumn(name = "rider_id")
     private User rider;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "dispatch_candidate_rider_id")
+    private User dispatchCandidateRider;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20, columnDefinition = "VARCHAR(20)")
     private OrderStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "dispatch_status", length = 20, columnDefinition = "VARCHAR(20)")
+    @Builder.Default
+    private DispatchStatus dispatchStatus = DispatchStatus.NONE;
 
     @Column(name = "total_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalPrice;
@@ -55,6 +64,18 @@ public class Order {
 
     @Column(name = "delivery_fee", precision = 10, scale = 2)
     private java.math.BigDecimal deliveryFee;
+
+    @Column(name = "dispatch_surcharge", precision = 10, scale = 2)
+    private java.math.BigDecimal dispatchSurcharge;
+
+    @Column(name = "dispatch_reject_count")
+    private Integer dispatchRejectCount;
+
+    @Column(name = "dispatch_started_at")
+    private LocalDateTime dispatchStartedAt;
+
+    @Column(name = "dispatch_deadline_at")
+    private LocalDateTime dispatchDeadlineAt;
 
     @Column(name = "estimated_delivery_time")
     private Integer estimatedDeliveryTime;  // 预计送达分钟数
@@ -93,8 +114,22 @@ public class Order {
         CANCELLED         // 已取消
     }
 
+    public enum DispatchStatus {
+        NONE,             // 未进入派单
+        REQUESTED,        // 商家标记无人派送，正在派单
+        REJECTED,         // 全职骑手已拒绝，仍在等待大厅接单或强制派单
+        ACCEPTED,         // 骑手主动接受派单
+        FORCE_ASSIGNED    // 超时后系统强制派单
+    }
+
     @PrePersist
     protected void onCreate() {
+        if (dispatchStatus == null) {
+            dispatchStatus = DispatchStatus.NONE;
+        }
+        if (dispatchRejectCount == null) {
+            dispatchRejectCount = 0;
+        }
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }
